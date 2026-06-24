@@ -107,11 +107,12 @@ internal static class Program
 
             if (classObject.Properties.Count > 0)
             {
-                int maxPropertyTypeLength = classObject.Properties.Max(p => Sanitize(p.Type)
+                int maxPropertyTypeLength = classObject.Properties.Max(p => p.Type
                                                                   .Length);
                 foreach (Property prop in classObject.Properties)
                 {
-                    string propertyLine = $"  {Sanitize(prop.Type).PadRight(maxPropertyTypeLength)} {prop.Name}";
+                    var paddedType = prop.Type.PadRight(maxPropertyTypeLength);
+                    string propertyLine = $"  {Sanitize(paddedType)} {prop.Name}";
                     s.AppendLine(propertyLine);
                     lineCount++;
 
