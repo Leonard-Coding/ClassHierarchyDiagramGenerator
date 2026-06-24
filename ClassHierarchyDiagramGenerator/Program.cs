@@ -18,6 +18,7 @@ internal static class Program
         {
             Console.WriteLine("Please provide a path to a directory as a command line argument.");
             return;
+            
         }
         
         // ändert das die Schriftart zu Monospaced? 
