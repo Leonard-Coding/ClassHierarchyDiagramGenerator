@@ -20,6 +20,8 @@ internal static class Program
             return;
             
         }
+
+        int AnzahlBlöcke = 0;
         
         // ändert das die Schriftart zu Monospaced? 
         string path = args[0];
@@ -68,7 +70,8 @@ internal static class Program
         int x = 0;
         int y = 0;
         int itemsInRow = 0;
-        const int maxItemsInRow = 20;
+        int AnzahlBlöcke = 0;
+        const int maxItemsInRow = 10;
 
         foreach (Class classObject in collectedClasses)
         {
@@ -159,10 +162,11 @@ internal static class Program
             }
 
             s.Append(TextBlocks.ClassEnd);
-
+            AnzahlBlöcke++;
+            
             // now we know how wide the class element should become
 
-            int width = longestLineCharacterCount * 6;
+            int width = longestLineCharacterCount * 13 / 2 + 8;
             int height = lineCount * 10;
 
             string classHeader = string.Format(TextBlocks.ClassBeginFormat, x, y, width, height);
@@ -172,8 +176,9 @@ internal static class Program
             if (itemsInRow == maxItemsInRow)
             {
                 x = 0;
-                y += 50;
+                y += 200; //+ maximumheight;
                 itemsInRow = 0;
+                //maximumheight = 0;
             }
 
             s.Insert(classElementStartIndex, classHeader);
@@ -182,6 +187,7 @@ internal static class Program
         }
 
         s.AppendLine(TextBlocks.FileEnd);
+        Console.WriteLine("Dein Dokument ist fertig mit " + AnzahlBlöcke + " Blöcken"); //schöner schreiben
         return s.ToString();
     }
 
