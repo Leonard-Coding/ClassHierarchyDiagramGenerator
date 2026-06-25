@@ -88,10 +88,18 @@ internal static class Program
 
             s.AppendLine("--");
             lineCount++;
+            
+            
 
             if (classObject.Fields.Count > 0)
             {
                 int maxFieldTypeLength = classObject.Fields.Max(f => f.Type.Length);
+                int maxFieldTypeLength = classObject.Fields.Max(f => Sanitize(f.Type)
+                                                           .Length);
+                
+                s.AppendLine("--");
+                lineCount++;
+                
                 foreach (Field field in classObject.Fields)
                 {
                     string fieldLine = $"  {field.Type.PadRight(maxFieldTypeLength)} {field.Name}";
@@ -100,15 +108,16 @@ internal static class Program
                     s.AppendLine(Sanitize(fieldLine));
                     lineCount++;
                 }
-
-                s.AppendLine("--");
-                lineCount++;
             }
 
             if (classObject.Properties.Count > 0)
             {
                 int maxPropertyTypeLength = classObject.Properties.Max(p => p.Type
                                                                   .Length);
+                
+                s.AppendLine("--");
+                lineCount++;
+                
                 foreach (Property prop in classObject.Properties)
                 {
                     var paddedType = prop.Type.PadRight(maxPropertyTypeLength);
@@ -119,7 +128,10 @@ internal static class Program
                     s.AppendLine(Sanitize(propertyLine));
                     lineCount++;
                 }
+            }
 
+            if (classObject.Events.Count > 0)
+            {
                 s.AppendLine("--");
                 lineCount++;
             }
@@ -140,7 +152,11 @@ internal static class Program
                     s.AppendLine(Sanitize(eventLine));
                     lineCount++;
                 }
-                //kann die letzte Linie weg?
+                
+            }
+
+            if (classObject.Methods.Count > 0)
+            {
                 s.AppendLine("--");
                 lineCount++;
             }
@@ -167,7 +183,7 @@ internal static class Program
             // now we know how wide the class element should become
 
             int width = longestLineCharacterCount * 13 / 2 + 8;
-            int height = lineCount * 10;
+            int height = lineCount * 10 + 12;
 
             string classHeader = string.Format(TextBlocks.ClassBeginFormat, x, y, width, height);
 
