@@ -77,29 +77,25 @@ internal static class Program
 
             int classElementStartIndex = s.Length - 1;
 
+            UpdateToLongest(ref longestLineCharacterCount, classObject.Name);
+
             string sanitizedClassName = Sanitize(classObject.Name);
-
-            UpdateToLongest(ref longestLineCharacterCount, sanitizedClassName);
-
             s.AppendLine($"*{sanitizedClassName}*");
             lineCount++;
 
             s.AppendLine("--");
             lineCount++;
-            
-            
 
             if (classObject.Fields.Count > 0)
             {
-                int maxFieldTypeLength = classObject.Fields.Max(f => Sanitize(f.Type)
-                                                           .Length);
+                int maxFieldTypeLength = classObject.Fields.Max(f => f.Type.Length);
                 foreach (Field field in classObject.Fields)
                 {
-                    string fieldLine = $"  {Sanitize(field.Type).PadRight(maxFieldTypeLength)} {field.Name}";
-                    s.AppendLine(fieldLine);
-                    lineCount++;
-
+                    string fieldLine = $"  {field.Type.PadRight(maxFieldTypeLength)} {field.Name}";
                     UpdateToLongest(ref longestLineCharacterCount, fieldLine);
+                    
+                    s.AppendLine(Sanitize(fieldLine));
+                    lineCount++;
                 }
 
                 s.AppendLine("--");
@@ -113,11 +109,12 @@ internal static class Program
                 foreach (Property prop in classObject.Properties)
                 {
                     var paddedType = prop.Type.PadRight(maxPropertyTypeLength);
-                    string propertyLine = $"  {Sanitize(paddedType)} {prop.Name}";
-                    s.AppendLine(propertyLine);
-                    lineCount++;
-
+                    string propertyLine = $"  {paddedType} {prop.Name}";
+                    
                     UpdateToLongest(ref longestLineCharacterCount, propertyLine);
+                    
+                    s.AppendLine(Sanitize(propertyLine));
+                    lineCount++;
                 }
 
                 s.AppendLine("--");
@@ -131,14 +128,14 @@ internal static class Program
                     string parameterTypes = "";
                     if (ev.ParameterTypes.Count > 0)
                     {
-                        parameterTypes = " " + string.Join(", ", ev.ParameterTypes.Select(Sanitize));
+                        parameterTypes = " " + string.Join(", ", ev.ParameterTypes);
                     }
 
                     string eventLine = $"  {ev.Name}{parameterTypes}!";
-                    s.AppendLine(eventLine);
-                    lineCount++;
-
                     UpdateToLongest(ref longestLineCharacterCount, eventLine);
+                    
+                    s.AppendLine(Sanitize(eventLine));
+                    lineCount++;
                 }
                 //kann die letzte Linie weg?
                 s.AppendLine("--");
@@ -147,19 +144,18 @@ internal static class Program
 
             foreach (Method method in classObject.Methods)
             {
-                string name = Sanitize(method.Name);
                 string parameters = string.Join(", ", method.Parameters);
-                string returnType = Sanitize(method.ReturnType);
-                string methodLine = $"  {name}({parameters})";
+                string returnType = method.ReturnType;
+                string methodLine = $"  {method.Name}({parameters})";
                 if (returnType != "void")
                 {
                     methodLine += $"->{returnType}";
                 }
 
-                s.AppendLine(methodLine);
-                lineCount++;
-
                 UpdateToLongest(ref longestLineCharacterCount, methodLine);
+                
+                s.AppendLine(Sanitize(methodLine));
+                lineCount++;
             }
 
             s.Append(TextBlocks.ClassEnd);
