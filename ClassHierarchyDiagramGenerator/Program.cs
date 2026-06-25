@@ -66,17 +66,19 @@ internal static class Program
         StringBuilder s = new StringBuilder();
 
         s.AppendLine(TextBlocks.FileBeginFormat);
-
+        
+        int maximumheight = 0;
         int x = 0;
         int y = 0;
         int itemsInRow = 0;
         int AnzahlBlöcke = 0;
-        const int maxItemsInRow = 8;
+        const int maxItemsInRow = 20;
 
         foreach (Class classObject in collectedClasses)
         {
             int longestLineCharacterCount = 0;
             int lineCount = 0;
+            int strichlineCount = 0;
 
             int classElementStartIndex = s.Length - 1;
 
@@ -95,6 +97,7 @@ internal static class Program
                 
                 s.AppendLine("--");
                 lineCount++;
+                strichlineCount++;
                 
                 foreach (Field field in classObject.Fields)
                 {
@@ -113,6 +116,7 @@ internal static class Program
                 
                 s.AppendLine("--");
                 lineCount++;
+                strichlineCount++;
                 
                 foreach (Property prop in classObject.Properties)
                 {
@@ -130,6 +134,7 @@ internal static class Program
             {
                 s.AppendLine("--");
                 lineCount++;
+                strichlineCount++;
             }
 
             if (classObject.Events.Count > 0)
@@ -155,6 +160,7 @@ internal static class Program
             {
                 s.AppendLine("--");
                 lineCount++;
+                strichlineCount++;
             }
 
             foreach (Method method in classObject.Methods)
@@ -177,26 +183,39 @@ internal static class Program
             AnzahlBlöcke++;
             
             // now we know how wide the class element should become
+            static double CeilToMultiple(double value, double multiple)
+            {
+                if (multiple == 0)
+                    throw new ArgumentException("Multiple darf nicht 0 sein.");
 
-            int width = longestLineCharacterCount * 13 / 2 + 8;
-            int height = lineCount * 10 + 12;
+                return Math.Ceiling(value / multiple) * multiple;
+            }
 
+            double widthnn = CeilToMultiple(longestLineCharacterCount * 6 + 8, 10);
+            int width = (int)widthnn;
+            double heightnn = CeilToMultiple((lineCount - strichlineCount) * 10 + strichlineCount * 6 + 14, 10);
+            int height = (int)heightnn;
+            if (height >= maximumheight)
+            {
+                maximumheight = height; 
+            }
+            
             string classHeader = string.Format(TextBlocks.ClassBeginFormat, x, y, width, height);
 
             itemsInRow++;
 
             if (itemsInRow == maxItemsInRow)
             {
-                int maximumheight = 0;
                 x = 0;
-                y += 200 + maximumheight;
+                y += 30 + maximumheight;
+                maximumheight = 0;
                 itemsInRow = 0;
-                width = -18;
+                width = -30;
             }
 
             s.Insert(classElementStartIndex, classHeader);
 
-            x += width + 18;
+            x += width + 30;
         }
 
         s.AppendLine(TextBlocks.FileEnd);
