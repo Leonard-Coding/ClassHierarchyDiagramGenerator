@@ -71,7 +71,7 @@ internal static class Program
         int y = 0;
         int itemsInRow = 0;
         int AnzahlBlöcke = 0;
-        const int maxItemsInRow = 10;
+        const int maxItemsInRow = 8;
 
         foreach (Class classObject in collectedClasses)
         {
@@ -85,17 +85,13 @@ internal static class Program
             string sanitizedClassName = Sanitize(classObject.Name);
             s.AppendLine($"*{sanitizedClassName}*");
             lineCount++;
-
-            s.AppendLine("--");
-            lineCount++;
+            
             
             
 
             if (classObject.Fields.Count > 0)
             {
                 int maxFieldTypeLength = classObject.Fields.Max(f => f.Type.Length);
-                int maxFieldTypeLength = classObject.Fields.Max(f => Sanitize(f.Type)
-                                                           .Length);
                 
                 s.AppendLine("--");
                 lineCount++;
@@ -191,15 +187,16 @@ internal static class Program
 
             if (itemsInRow == maxItemsInRow)
             {
+                int maximumheight = 0;
                 x = 0;
-                y += 200; //+ maximumheight;
+                y += 200 + maximumheight;
                 itemsInRow = 0;
-                //maximumheight = 0;
+                width = -18;
             }
 
             s.Insert(classElementStartIndex, classHeader);
 
-            x += width + 20;
+            x += width + 18;
         }
 
         s.AppendLine(TextBlocks.FileEnd);
