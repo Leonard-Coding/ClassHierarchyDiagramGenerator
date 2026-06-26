@@ -95,15 +95,15 @@ internal static class Program
         }
         
         x = 0;
-        y = maximumheight + 50;
+        y = y + maximumheight + 50;
         maximumheight = 0;
         transparency = 0;
         
-        /*foreach (Enum item in enums)
+        foreach (Enum item in enums)
         {
             transparency = InsertClass(enums, s, item, transparency, bgcolor, maxItemsInRow, ref anzahlBlöcke, ref maximumheight, ref x, ref y, ref itemsInRow);
         }
-        */
+        
         s.AppendLine(TextBlocks.FileEnd);
         Console.WriteLine("Dein Dokument ist fertig mit " + anzahlBlöcke + " Blöcken"); //schöner schreiben
         return s.ToString();
@@ -438,106 +438,36 @@ internal static class Program
         int elongestLineCharacterCount = 0;
         int elineCount = 0;
         int estrichlineCount = 0;
+        ebgcolor = "green";
 
         int eclassElementStartIndex = s.Length - 1;
 
         UpdateToLongest(ref elongestLineCharacterCount, item.Name);
-
+        
         string esanitizedClassName = Sanitize(item.Name);
         s.AppendLine($"*{esanitizedClassName}*");
         elineCount++;
 
-        if (item.Fields.Count > 0)
+        if (item.Members.Count > 0)
         {
-            int emaxFieldTypeLength = item.Fields.Max(f => f.Type.Length);
-                
             s.AppendLine("--");
             elineCount++;
             estrichlineCount++;
                 
-            foreach (Field field in item.Fields)
+            foreach (string members in item.Members)
             {
-                string efieldLine = $"  {field.Type.PadRight(emaxFieldTypeLength)} {field.Name}";
-                UpdateToLongest(ref elongestLineCharacterCount, efieldLine);
-                    
-                s.AppendLine(Sanitize(efieldLine));
+                string emembersLine = $"  {members}";
+                UpdateToLongest(ref elongestLineCharacterCount, emembersLine);
+                s.AppendLine(emembersLine);
                 elineCount++;
             }
         }
-
-        if (item.Properties.Count > 0)
-        {
-            int emaxPropertyTypeLength = item.Properties.Max(p => p.Type
-                                                                  .Length);
-                
-            s.AppendLine("--");
-            elineCount++;
-            estrichlineCount++;
-                
-            foreach (Property prop in item.Properties)
-            {
-                var epaddedType = prop.Type.PadRight(emaxPropertyTypeLength);
-                string epropertyLine = $"  {epaddedType} {prop.Name}";
-                    
-                UpdateToLongest(ref elongestLineCharacterCount, epropertyLine);
-                    
-                s.AppendLine(Sanitize(epropertyLine));
-                elineCount++;
-            }
-        }
-
-        if (item.Events.Count > 0)
-        {
-            s.AppendLine("--");
-            elineCount++;
-            estrichlineCount++;
-        }
-
-        if (item.Events.Count > 0)
-        {
-            foreach (Event ev in item.Events)
-            {
-                string eparameterTypes = "";
-                if (ev.ParameterTypes.Count > 0)
-                {
-                    eparameterTypes = " " + string.Join(", ", ev.ParameterTypes);
-                }
-
-                string eeventLine = $"  {ev.Name}{eparameterTypes}!";
-                UpdateToLongest(ref elongestLineCharacterCount, eeventLine);
-                    
-                s.AppendLine(Sanitize(eeventLine));
-                elineCount++;
-            }
-                
-        }
-
-        if (item.Methods.Count > 0)
-        {
-            s.AppendLine("--");
-            elineCount++;
-            estrichlineCount++;
-        }
-
-        foreach (Method method in item.Methods)
-        {
-            string eparameters = string.Join(", ", method.Parameters);
-            string ereturnType = method.ReturnType;
-            string emethodLine = $"  {method.Name}({eparameters})";
-            if (ereturnType != "void")
-            {
-                emethodLine += $"->{ereturnType}";
-            }
-
-            UpdateToLongest(ref elongestLineCharacterCount, emethodLine);
-                
-            s.AppendLine(Sanitize(emethodLine));
-            elineCount++;
-        }
-
-        etransparency += 100 / enums.Count;
+        
+        
         s.AppendLine($"bg={ebgcolor}");
         s.AppendLine($"transparency={etransparency}");
+        var stepSize = 100 / (item.Members.Count - 1);
+        etransparency += stepSize;
         s.Append(TextBlocks.ClassEnd);
         eanzahlBlöcke++;
             
