@@ -21,7 +21,7 @@ internal static class Program
             
         }
 
-        int AnzahlBlöcke = 0;
+        int anzahlBlöcke = 0;
         
         // ändert das die Schriftart zu Monospaced? 
         string path = args[0];
@@ -47,11 +47,12 @@ internal static class Program
         List<Class> collectedClasses = ExtractClassesFromFiles(files);
 
 
-        List<Class> sortedDescending = OrderByNumberOfMembers(collectedClasses);
+        //List<Class> sortedDescendin = OrderByNumberOfMembers(collectedClasses);
+        List<Class> sortedDescending = collectedClasses.OrderByDescending(Class => Class.MemberCount).ToList();
         
         
         //
-        string fileContent = GenerateDiagramFileContent(collectedClasses);
+        string fileContent = GenerateDiagramFileContent(sortedDescending);
 
         //er schreibt in das output document alles rein aber was genau ist catch? output path ist wohin das output dokument muss?
         try
@@ -63,21 +64,10 @@ internal static class Program
             Console.WriteLine(e);
         }
     }
-
-    private static List<Class> OrderByNumberOfMembers(List<Class> collectedClasses)
-    {
-        //collectedClasses[0].MemberCount
-        var sortedDescending = collectedClasses.OrderByDescending(i => i.MemberCount).ToList();
-        Console.WriteLine("Sortierte Liste:");
-        foreach (var item in sortedDescending)
-        {
-            Console.WriteLine($"{item.Name} - {item.MemberCount}");
-        }
-        return collectedClasses;
-    }
+    
 
     // hier wird dann berechnet wo und wie das in umlet muss?
-    private static string GenerateDiagramFileContent(List<Class> collectedClasses)
+    private static string GenerateDiagramFileContent(List<Class> sortedDescending)
     {
         StringBuilder s = new StringBuilder();
 
@@ -87,10 +77,10 @@ internal static class Program
         int x = 0;
         int y = 0;
         int itemsInRow = 0;
-        int AnzahlBlöcke = 0;
-        const int maxItemsInRow = 20;
+        int anzahlBlöcke = 0;
+        const int maxItemsInRow = -1;
 
-        foreach (Class classObject in collectedClasses)
+        foreach (Class item in sortedDescending)
         {
             int longestLineCharacterCount = 0;
             int lineCount = 0;
@@ -98,24 +88,24 @@ internal static class Program
 
             int classElementStartIndex = s.Length - 1;
 
-            UpdateToLongest(ref longestLineCharacterCount, classObject.Name);
+            UpdateToLongest(ref longestLineCharacterCount, item.Name);
 
-            string sanitizedClassName = Sanitize(classObject.Name);
+            string sanitizedClassName = Sanitize(item.Name);
             s.AppendLine($"*{sanitizedClassName}*");
             lineCount++;
             
             
             
 
-            if (classObject.Fields.Count > 0)
+            if (item.Fields.Count > 0)
             {
-                int maxFieldTypeLength = classObject.Fields.Max(f => f.Type.Length);
+                int maxFieldTypeLength = item.Fields.Max(f => f.Type.Length);
                 
                 s.AppendLine("--");
                 lineCount++;
                 strichlineCount++;
                 
-                foreach (Field field in classObject.Fields)
+                foreach (Field field in item.Fields)
                 {
                     string fieldLine = $"  {field.Type.PadRight(maxFieldTypeLength)} {field.Name}";
                     UpdateToLongest(ref longestLineCharacterCount, fieldLine);
@@ -125,16 +115,16 @@ internal static class Program
                 }
             }
 
-            if (classObject.Properties.Count > 0)
+            if (item.Properties.Count > 0)
             {
-                int maxPropertyTypeLength = classObject.Properties.Max(p => p.Type
+                int maxPropertyTypeLength = item.Properties.Max(p => p.Type
                                                                   .Length);
                 
                 s.AppendLine("--");
                 lineCount++;
                 strichlineCount++;
                 
-                foreach (Property prop in classObject.Properties)
+                foreach (Property prop in item.Properties)
                 {
                     var paddedType = prop.Type.PadRight(maxPropertyTypeLength);
                     string propertyLine = $"  {paddedType} {prop.Name}";
@@ -146,16 +136,16 @@ internal static class Program
                 }
             }
 
-            if (classObject.Events.Count > 0)
+            if (item.Events.Count > 0)
             {
                 s.AppendLine("--");
                 lineCount++;
                 strichlineCount++;
             }
 
-            if (classObject.Events.Count > 0)
+            if (item.Events.Count > 0)
             {
-                foreach (Event ev in classObject.Events)
+                foreach (Event ev in item.Events)
                 {
                     string parameterTypes = "";
                     if (ev.ParameterTypes.Count > 0)
@@ -172,14 +162,14 @@ internal static class Program
                 
             }
 
-            if (classObject.Methods.Count > 0)
+            if (item.Methods.Count > 0)
             {
                 s.AppendLine("--");
                 lineCount++;
                 strichlineCount++;
             }
 
-            foreach (Method method in classObject.Methods)
+            foreach (Method method in item.Methods)
             {
                 string parameters = string.Join(", ", method.Parameters);
                 string returnType = method.ReturnType;
@@ -196,7 +186,7 @@ internal static class Program
             }
 
             s.Append(TextBlocks.ClassEnd);
-            AnzahlBlöcke++;
+            anzahlBlöcke++;
             
             // now we know how wide the class element should become
             static double CeilToMultiple(double value, double multiple)
@@ -223,19 +213,19 @@ internal static class Program
             if (itemsInRow == maxItemsInRow)
             {
                 x = 0;
-                y += 30 + maximumheight;
+                y += 10 + maximumheight;
                 maximumheight = 0;
                 itemsInRow = 0;
-                width = -30;
+                width = -10;
             }
 
             s.Insert(classElementStartIndex, classHeader);
 
-            x += width + 30;
+            x += width + 10;
         }
 
         s.AppendLine(TextBlocks.FileEnd);
-        Console.WriteLine("Dein Dokument ist fertig mit " + AnzahlBlöcke + " Blöcken"); //schöner schreiben
+        Console.WriteLine("Dein Dokument ist fertig mit " + anzahlBlöcke + " Blöcken"); //schöner schreiben
         return s.ToString();
     }
 
@@ -248,7 +238,7 @@ internal static class Program
 
     private static List<Class> ExtractClassesFromFiles(string[] files)
     {
-        List<Class> collectedClasses = new List<Class>();
+        List<Class> sortedDescending = new List<Class>();
 
         foreach (string file in files)
         {
@@ -308,7 +298,7 @@ internal static class Program
                                     });
                     }
 
-                    collectedClasses.Add(new Class
+                    sortedDescending.Add(new Class
                                          {
                                              Name = className,
                                              Fields = fields,
@@ -324,6 +314,6 @@ internal static class Program
             }
         }
 
-        return collectedClasses;
+        return sortedDescending;
     }
 }
