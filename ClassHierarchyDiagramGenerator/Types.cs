@@ -12,6 +12,13 @@ public class Class
     public List<Method> Methods { get; init; }
 
     public NodeData Data { get; init; }
+    public int MemberCount
+    {
+        get
+        {
+            return Fields.Count + Properties.Count + Events.Count + Methods.Count;
+        }
+    }
 }
 
 public class Method

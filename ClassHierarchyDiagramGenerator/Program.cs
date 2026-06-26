@@ -45,6 +45,10 @@ internal static class Program
 
         // 
         List<Class> collectedClasses = ExtractClassesFromFiles(files);
+
+
+        List<Class> sortedDescending = OrderByNumberOfMembers(collectedClasses);
+        
         
         //
         string fileContent = GenerateDiagramFileContent(collectedClasses);
@@ -58,6 +62,18 @@ internal static class Program
         {
             Console.WriteLine(e);
         }
+    }
+
+    private static List<Class> OrderByNumberOfMembers(List<Class> collectedClasses)
+    {
+        //collectedClasses[0].MemberCount
+        var sortedDescending = collectedClasses.OrderByDescending(i => i.MemberCount).ToList();
+        Console.WriteLine("Sortierte Liste:");
+        foreach (var item in sortedDescending)
+        {
+            Console.WriteLine($"{item.Name} - {item.MemberCount}");
+        }
+        return collectedClasses;
     }
 
     // hier wird dann berechnet wo und wie das in umlet muss?
