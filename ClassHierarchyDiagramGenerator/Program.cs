@@ -69,7 +69,9 @@ internal static class Program
         StringBuilder s = new StringBuilder();
 
         s.AppendLine(TextBlocks.FileBeginFormat);
-        
+
+        string bgcolor = "gray";
+        int transparency = 0;
         int maximumheight = 0;
         int x = 0;
         int y = 0;
@@ -179,6 +181,9 @@ internal static class Program
                 lineCount++;
             }
 
+            transparency += 100 / sortedDescending.Count;
+            s.AppendLine($"bg={bgcolor}");
+            s.AppendLine($"transparency={transparency}");
             s.Append(TextBlocks.ClassEnd);
             anzahlBlöcke++;
             
@@ -207,15 +212,15 @@ internal static class Program
             if (itemsInRow == maxItemsInRow)
             {
                 x = 0;
-                y += 10 + maximumheight;
+                y += 0 + maximumheight;
                 maximumheight = 0;
                 itemsInRow = 0;
-                width = -10;
+                width = 0;
             }
 
             s.Insert(classElementStartIndex, classHeader);
 
-            x += width + 10;
+            x += width + 0;
         }
 
         s.AppendLine(TextBlocks.FileEnd);
