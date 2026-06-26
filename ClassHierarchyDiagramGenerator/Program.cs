@@ -44,15 +44,12 @@ internal static class Program
         }
 
         // 
-        List<Class> collectedClasses = ExtractClassesFromFiles(files);
-
-
-        //List<Class> sortedDescendin = OrderByNumberOfMembers(collectedClasses);
-        List<Class> sortedDescending = collectedClasses.OrderByDescending(Class => Class.MemberCount).ToList();
-        
+        List<Class> collectedClasses = SyntaxExtractionFromFiles.ExtractClasses(files).OrderByDescending(c => c.MemberCount).ToList();
+        List<Interface> collectedInterfaces = SyntaxExtractionFromFiles.ExtractInterfaces(files).OrderByDescending(i => i.MemberCount).ToList();
+        List<Enum> collectedEnums = SyntaxExtractionFromFiles.ExtractEnums(files).OrderByDescending(e => e.MemberCount).ToList();
         
         //
-        string fileContent = GenerateDiagramFileContent(sortedDescending);
+        string fileContent = GenerateDiagramFileContent(collectedClasses);
 
         //er schreibt in das output document alles rein aber was genau ist catch? output path ist wohin das output dokument muss?
         try
@@ -93,9 +90,6 @@ internal static class Program
             string sanitizedClassName = Sanitize(item.Name);
             s.AppendLine($"*{sanitizedClassName}*");
             lineCount++;
-            
-            
-            
 
             if (item.Fields.Count > 0)
             {
@@ -234,86 +228,5 @@ internal static class Program
         longestLineCharacterCount = sanitizedClassName.Length > longestLineCharacterCount
                                         ? sanitizedClassName.Length
                                         : longestLineCharacterCount;
-    }
-
-    private static List<Class> ExtractClassesFromFiles(string[] files)
-    {
-        List<Class> sortedDescending = new List<Class>();
-
-        foreach (string file in files)
-        {
-            try
-            {
-                string code = File.ReadAllText(file);
-                SyntaxTree tree = CSharpSyntaxTree.ParseText(code);
-                CompilationUnitSyntax root = tree.GetCompilationUnitRoot();
-
-                IEnumerable<ClassDeclarationSyntax> classes = root.DescendantNodes()
-                                                                  .OfType<ClassDeclarationSyntax>();
-
-                foreach (ClassDeclarationSyntax classDeclaration in classes)
-                {
-                    string className = classDeclaration.Identifier.Text;
-                    List<Field> fields = new List<Field>();
-                    List<Property> properties = new List<Property>();
-                    List<Event> events = new List<Event>();
-                    List<Method> methods = new List<Method>();
-
-                    foreach (FieldDeclarationSyntax fieldDecl in classDeclaration.Members.OfType<FieldDeclarationSyntax>())
-                    {
-                        string type = fieldDecl.Declaration.Type.ToString();
-                        foreach (VariableDeclaratorSyntax variable in fieldDecl.Declaration.Variables)
-                        {
-                            fields.Add(new Field { Name = variable.Identifier.Text, Type = type });
-                        }
-                    }
-
-                    foreach (PropertyDeclarationSyntax propDecl in classDeclaration.Members.OfType<PropertyDeclarationSyntax>())
-                    {
-                        properties.Add(new Property { Name = propDecl.Identifier.Text, Type = propDecl.Type.ToString() });
-                    }
-
-                    foreach (EventFieldDeclarationSyntax eventDecl in classDeclaration.Members.OfType<EventFieldDeclarationSyntax>())
-                    {
-                        List<string> parameterTypes = new List<string>();
-                        if (eventDecl.Declaration.Type is GenericNameSyntax genericName)
-                        {
-                            parameterTypes.AddRange(genericName.TypeArgumentList.Arguments.Select(a => a.ToString()));
-                        }
-
-                        foreach (VariableDeclaratorSyntax variable in eventDecl.Declaration.Variables)
-                        {
-                            events.Add(new Event { Name = variable.Identifier.Text, ParameterTypes = parameterTypes });
-                        }
-                    }
-
-                    foreach (MethodDeclarationSyntax methodDecl in classDeclaration.Members.OfType<MethodDeclarationSyntax>())
-                    {
-                        methods.Add(new Method
-                                    {
-                                        Name = methodDecl.Identifier.Text,
-                                        ReturnType = methodDecl.ReturnType.ToString(),
-                                        Parameters = methodDecl.ParameterList.Parameters.Select(p => p.Identifier.Text)
-                                                               .ToList()
-                                    });
-                    }
-
-                    sortedDescending.Add(new Class
-                                         {
-                                             Name = className,
-                                             Fields = fields,
-                                             Properties = properties,
-                                             Events = events,
-                                             Methods = methods
-                                         });
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error reading file {file}: {ex.Message}");
-            }
-        }
-
-        return sortedDescending;
     }
 }
