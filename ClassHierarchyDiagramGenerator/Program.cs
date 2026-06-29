@@ -265,89 +265,89 @@ internal static class Program
     private static int InsertClass(List<Interface> interfaces,
                                    StringBuilder s,
                                    Interface item,
-                                   int itransparency,
-                                   string ibgcolor,
-                                   int imaxItemsInRow,
-                                   ref int ianzahlBlöcke,
-                                   ref int imaximumheight,
-                                   ref int ix,
-                                   ref int iy,
-                                   ref int iitemsInRow)
+                                   int transparency,
+                                   string bgcolor,
+                                   int maxItemsInRow,
+                                   ref int anzahlBlöcke,
+                                   ref int maximumheight,
+                                   ref int x,
+                                   ref int y,
+                                   ref int itemsInRow)
     {
-        int ilongestLineCharacterCount = 0;
-        int ilineCount = 0;
-        int istrichlineCount = 0;
-        ibgcolor = "red";
+        int longestLineCharacterCount = 0;
+        int lineCount = 0;
+        int strichlineCount = 0;
+        bgcolor = "red";
 
-        int iclassElementStartIndex = s.Length - 1;
+        int classElementStartIndex = s.Length - 1;
 
-        UpdateToLongest(ref ilongestLineCharacterCount, item.Name);
+        UpdateToLongest(ref longestLineCharacterCount, item.Name);
 
-        string isanitizedClassName = Sanitize(item.Name);
-        s.AppendLine($"*{isanitizedClassName}*");
-        ilineCount++;
+        string sanitizedClassName = Sanitize(item.Name);
+        s.AppendLine($"*{sanitizedClassName}*");
+        lineCount++;
 
         if (item.Fields.Count > 0)
         {
-            int imaxFieldTypeLength = item.Fields.Max(f => f.Type.Length);
+            int maxFieldTypeLength = item.Fields.Max(f => f.Type.Length);
                 
             s.AppendLine("--");
-            ilineCount++;
-            istrichlineCount++;
+            lineCount++;
+            strichlineCount++;
                 
             foreach (Field field in item.Fields)
             {
-                string ifieldLine = $"  {field.Type.PadRight(imaxFieldTypeLength)} {field.Name}";
-                UpdateToLongest(ref ilongestLineCharacterCount, ifieldLine);
+                string fieldLine = $"  {field.Type.PadRight(maxFieldTypeLength)} {field.Name}";
+                UpdateToLongest(ref longestLineCharacterCount, fieldLine);
                     
-                s.AppendLine(Sanitize(ifieldLine));
-                ilineCount++;
+                s.AppendLine(Sanitize(fieldLine));
+                lineCount++;
             }
         }
 
         if (item.Properties.Count > 0)
         {
-            int imaxPropertyTypeLength = item.Properties.Max(p => p.Type
+            int maxPropertyTypeLength = item.Properties.Max(p => p.Type
                                                                   .Length);
                 
             s.AppendLine("--");
-            ilineCount++;
-            istrichlineCount++;
+            lineCount++;
+            strichlineCount++;
                 
             foreach (Property prop in item.Properties)
             {
-                var ipaddedType = prop.Type.PadRight(imaxPropertyTypeLength);
-                string ipropertyLine = $"  {ipaddedType} {prop.Name}";
+                var paddedType = prop.Type.PadRight(maxPropertyTypeLength);
+                string propertyLine = $"  {paddedType} {prop.Name}";
                     
-                UpdateToLongest(ref ilongestLineCharacterCount, ipropertyLine);
+                UpdateToLongest(ref longestLineCharacterCount, propertyLine);
                     
-                s.AppendLine(Sanitize(ipropertyLine));
-                ilineCount++;
+                s.AppendLine(Sanitize(propertyLine));
+                lineCount++;
             }
         }
 
         if (item.Events.Count > 0)
         {
             s.AppendLine("--");
-            ilineCount++;
-            istrichlineCount++;
+            lineCount++;
+            strichlineCount++;
         }
 
         if (item.Events.Count > 0)
         {
             foreach (Event ev in item.Events)
             {
-                string iparameterTypes = "";
+                string parameterTypes = "";
                 if (ev.ParameterTypes.Count > 0)
                 {
-                    iparameterTypes = " " + string.Join(", ", ev.ParameterTypes);
+                    parameterTypes = " " + string.Join(", ", ev.ParameterTypes);
                 }
 
-                string ieventLine = $"  {ev.Name}i{iparameterTypes}!";
-                UpdateToLongest(ref ilongestLineCharacterCount, ieventLine);
+                string eventLine = $"  {ev.Name}i{parameterTypes}!";
+                UpdateToLongest(ref longestLineCharacterCount, eventLine);
                     
-                s.AppendLine(Sanitize(ieventLine));
-                ilineCount++;
+                s.AppendLine(Sanitize(eventLine));
+                lineCount++;
             }
                 
         }
@@ -355,33 +355,33 @@ internal static class Program
         if (item.Methods.Count > 0)
         {
             s.AppendLine("--");
-            ilineCount++;
-            istrichlineCount++;
+            lineCount++;
+            strichlineCount++;
         }
 
         foreach (Method method in item.Methods)
         {
-            string iparameters = string.Join(", ", method.Parameters);
-            string ireturnType = method.ReturnType;
-            string imethodLine = $"  {method.Name}({iparameters})";
-            if (ireturnType != "void")
+            string parameters = string.Join(", ", method.Parameters);
+            string returnType = method.ReturnType;
+            string methodLine = $"  {method.Name}({parameters})";
+            if (returnType != "void")
             {
-                imethodLine += $"->{ireturnType}";
+                methodLine += $"->{returnType}";
             }
 
-            UpdateToLongest(ref ilongestLineCharacterCount, imethodLine);
+            UpdateToLongest(ref longestLineCharacterCount, methodLine);
                 
-            s.AppendLine(Sanitize(imethodLine));
-            ilineCount++;
+            s.AppendLine(Sanitize(methodLine));
+            lineCount++;
         }
         
         
-        s.AppendLine($"bg={ibgcolor}");
-        s.AppendLine($"transparency={itransparency}");
+        s.AppendLine($"bg={bgcolor}");
+        s.AppendLine($"transparency={transparency}");
         var stepSize = 100 / (interfaces.Count - 1);
-        itransparency += stepSize;
+        transparency += stepSize;
         s.Append(TextBlocks.ClassEnd);
-        ianzahlBlöcke++;
+        anzahlBlöcke++;
             
         // now we know how wide the class element should become
         static double CeilToMultiple(double value, double multiple)
@@ -392,32 +392,32 @@ internal static class Program
             return Math.Ceiling(value / multiple) * multiple;
         }
 
-        double widthnn = CeilToMultiple(ilongestLineCharacterCount * 6 + 8, 10);
-        int iwidth = (int)widthnn;
-        double heightnn = CeilToMultiple((ilineCount - istrichlineCount) * 10 + istrichlineCount * 6 + 14, 10);
-        int iheight = (int)heightnn;
-        if (iheight >= imaximumheight)
+        double widthnn = CeilToMultiple(longestLineCharacterCount * 6 + 8, 10);
+        int width = (int)widthnn;
+        double heightnn = CeilToMultiple((lineCount - strichlineCount) * 10 + strichlineCount * 6 + 14, 10);
+        int height = (int)heightnn;
+        if (height >= maximumheight)
         {
-            imaximumheight = iheight; 
+            maximumheight = height; 
         }
             
-        string iclassHeader = string.Format(TextBlocks.ClassBeginFormat, ix, iy, iwidth, iheight);
+        string classHeader = string.Format(TextBlocks.ClassBeginFormat, x, y, width, height);
 
-        iitemsInRow++;
+        itemsInRow++;
 
-        if (iitemsInRow == imaxItemsInRow)
+        if (itemsInRow == maxItemsInRow)
         {
-            ix = 0;
-            iy += 0 + imaximumheight;
-            imaximumheight = 0;
-            iitemsInRow = 0;
-            iwidth = 0;
+            x = 0;
+            y += 0 + maximumheight;
+            maximumheight = 0;
+            itemsInRow = 0;
+            width = 0;
         }
 
-        s.Insert(iclassElementStartIndex, iclassHeader);
+        s.Insert(classElementStartIndex, classHeader);
 
-        ix += iwidth + 0;
-        return itransparency;
+        x += width + 0;
+        return transparency;
     }
     
     private static int InsertClass(List<Enum> enums,
