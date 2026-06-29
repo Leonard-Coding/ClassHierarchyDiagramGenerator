@@ -10,7 +10,7 @@ internal static class Program
         // TODO: Hard-coded output for now. Better let the user decide how to call and where to save the output.
         const string outputPath = "output.uxf";
         
-        // Wenn die Länge vom eingegebenen Path 0 ist also kein Path eingegeben wurde
+        // Wenn die Länge vom eingegebenen Path 0 ist, also kein Path eingegeben wurde
         if (args.Length == 0)
         {
             Console.WriteLine("Please provide a path to a directory as a command line argument.");
@@ -30,10 +30,10 @@ internal static class Program
             return;
         }
         
-        //er sucht nach cs files und fügt sie zur liste files hinzu
+        //er sucht nach cs files und fügt sie zur Liste files hinzu
         string[] files = Directory.GetFiles(path, "*.cs", SearchOption.AllDirectories);
 
-        // wenn die anzahl an files in der liste files 0 ist dann
+        // wenn die Anzahl an files in der Liste files 0 ist dann
         if (files.Length == 0)
         {
             Console.WriteLine("No C# files found in the directory.");
@@ -48,7 +48,7 @@ internal static class Program
         //
         string fileContent = GenerateDiagramFileContent(collectedClasses, collectedInterfaces, collectedEnums);
 
-        //er schreibt in das output document alles rein aber was genau ist catch? output path ist wohin das output dokument muss?
+        //er schreibt in das output document alles rein, aber was genau ist catch? output path ist, wohin das output dokument muss?
         try
         {
             File.WriteAllText(outputPath, fileContent);
@@ -60,7 +60,7 @@ internal static class Program
     }
     
 
-    // hier wird dann berechnet wo und wie das in umlet muss?
+    // hier wird dann berechnet, wo und wie das in umlet muss?
     private static string GenerateDiagramFileContent(List<Class> classes, List<Interface> interfaces, List<Enum> enums)
     {
         StringBuilder s = new StringBuilder();
@@ -423,50 +423,50 @@ internal static class Program
     private static int InsertClass(List<Enum> enums,
                                    StringBuilder s,
                                    Enum item,
-                                   int etransparency,
-                                   string ebgcolor,
-                                   int emaxItemsInRow,
-                                   ref int eanzahlBlöcke,
-                                   ref int emaximumheight,
-                                   ref int ex,
-                                   ref int ey,
-                                   ref int eitemsInRow)
+                                   int transparency,
+                                   string bgcolor,
+                                   int maxItemsInRow,
+                                   ref int anzahlBlöcke,
+                                   ref int maximumheight,
+                                   ref int x,
+                                   ref int y,
+                                   ref int itemsInRow)
     {
-        int elongestLineCharacterCount = 0;
-        int elineCount = 0;
-        int estrichlineCount = 0;
-        ebgcolor = "green";
+        int longestLineCharacterCount = 0;
+        int lineCount = 0;
+        int strichlineCount = 0;
+        bgcolor = "green";
 
-        int eclassElementStartIndex = s.Length - 1;
+        int classElementStartIndex = s.Length - 1;
 
-        UpdateToLongest(ref elongestLineCharacterCount, item.Name);
+        UpdateToLongest(ref longestLineCharacterCount, item.Name);
         
-        string esanitizedClassName = Sanitize(item.Name);
-        s.AppendLine($"*{esanitizedClassName}*");
-        elineCount++;
+        string sanitizedClassName = Sanitize(item.Name);
+        s.AppendLine($"*{sanitizedClassName}*");
+        lineCount++;
 
         if (item.Members.Count > 0)
         {
             s.AppendLine("--");
-            elineCount++;
-            estrichlineCount++;
+            lineCount++;
+            strichlineCount++;
                 
             foreach (string members in item.Members)
             {
-                string emembersLine = $"  {members}";
-                UpdateToLongest(ref elongestLineCharacterCount, emembersLine);
-                s.AppendLine(emembersLine);
-                elineCount++;
+                string membersLine = $"  {members}";
+                UpdateToLongest(ref longestLineCharacterCount, membersLine);
+                s.AppendLine(membersLine);
+                lineCount++;
             }
         }
         
         
-        s.AppendLine($"bg={ebgcolor}");
-        s.AppendLine($"transparency={etransparency}");
+        s.AppendLine($"bg={bgcolor}");
+        s.AppendLine($"transparency={transparency}");
         var stepSize = 100 / (item.Members.Count - 1);
-        etransparency += stepSize;
+        transparency += stepSize;
         s.Append(TextBlocks.ClassEnd);
-        eanzahlBlöcke++;
+        anzahlBlöcke++;
             
         // now we know how wide the class element should become
         static double CeilToMultiple(double value, double multiple)
@@ -477,32 +477,32 @@ internal static class Program
             return Math.Ceiling(value / multiple) * multiple;
         }
 
-        double ewidthnn = CeilToMultiple(elongestLineCharacterCount * 6 + 8, 10);
-        int ewidth = (int)ewidthnn;
-        double eheightnn = CeilToMultiple((elineCount - estrichlineCount) * 10 + estrichlineCount * 6 + 14, 10);
-        int eheight = (int)eheightnn;
-        if (eheight >= emaximumheight)
+        double widthnn = CeilToMultiple(longestLineCharacterCount * 6 + 8, 10);
+        int width = (int)widthnn;
+        double heightnn = CeilToMultiple((lineCount - strichlineCount) * 10 + strichlineCount * 6 + 14, 10);
+        int height = (int)heightnn;
+        if (height >= maximumheight)
         {
-            emaximumheight = eheight; 
+            maximumheight = height; 
         }
             
-        string classHeader = string.Format(TextBlocks.ClassBeginFormat, ex, ey, ewidth, eheight);
+        string classHeader = string.Format(TextBlocks.ClassBeginFormat, x, y, width, height);
 
-        eitemsInRow++;
+        itemsInRow++;
 
-        if (eitemsInRow == emaxItemsInRow)
+        if (itemsInRow == maxItemsInRow)
         {
-            ex = 0;
-            ey += 0 + emaximumheight;
-            emaximumheight = 0;
-            eitemsInRow = 0;
-            ewidth = 0;
+            x = 0;
+            y += 0 + maximumheight;
+            maximumheight = 0;
+            itemsInRow = 0;
+            width = 0;
         }
 
-        s.Insert(eclassElementStartIndex, classHeader);
+        s.Insert(classElementStartIndex, classHeader);
 
-        ex += ewidth + 0;
-        return etransparency;
+        x += width + 0;
+        return transparency;
     }
     private static void UpdateToLongest(ref int longestLineCharacterCount, string sanitizedClassName)
     {
