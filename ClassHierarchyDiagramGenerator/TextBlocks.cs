@@ -5,7 +5,7 @@ public static class TextBlocks
     public const string FileBeginFormat = @"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""no""?>
 <diagram program=""umlet"" version=""15.1"">
   <help_text>fontfamily=Monospaced</help_text>
-  <zoom_level>7</zoom_level>";
+  <zoom_level>10</zoom_level>";
 
     public const string FileEnd = @"</diagram>";
 

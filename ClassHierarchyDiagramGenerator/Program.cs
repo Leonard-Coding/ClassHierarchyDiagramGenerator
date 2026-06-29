@@ -100,15 +100,60 @@ internal static class Program
         {
             transparency = InsertClass(enums, s, item, transparency, bgcolor, maxItemsInRow, ref anzahlBlöcke, ref maximumheight, ref x, ref y, ref itemsInRow);
         }
+
+        foreach (Class item in classes)
+        {
+            foreach (var interfaceName in item.Interfaces)
+            {
+                foreach (var @interface in interfaces)
+                {
+                    if (interfaceName == @interface.Name)
+                    {
+                        var classData = item.Data;
+                        var interfaceData = @interface.Data;
+                        string pfeilart = "lt=&lt;&lt";
+                        double xgegeben = classData.X;    //x
+                        double widthgegeben = classData.Width; //x
+                        double ygegeben = classData.Y;
+                        double heightgegeben = classData.Height;
+                        double xpfeil = xgegeben + (widthgegeben / 2); //x
+                        double ypfeil = ygegeben + heightgegeben;
+                        int xzielgegeben = interfaceData.X;       //x
+                        int widthzielgegeben = interfaceData.Width; //x
+                        int yzielgegeben = interfaceData.Y;
+                        int heightzielgegeben = interfaceData.Height;
+                        double xende = xzielgegeben + (widthzielgegeben / 2); //x
+                        double yende = yzielgegeben;
+                        double xveränderungpfeil = -(xpfeil - xende); //x
+                        double yveränderungpfeil = -(ypfeil - yende);
+                        //for each verbindung
+                        s.AppendLine("  <element>");                                            //fest
+                        s.AppendLine("    <id>Relation</id>");                                  //fest
+                        s.AppendLine("    <coordinates>");                                      //fest
+                        s.AppendLine($"     <x>{xpfeil}</x>");                                  //vom startblock x+1/2*width (ceiltomultiple 10)
+                        s.AppendLine($"     <y>{ypfeil}</y>");                                  //vom startblock y+height
+                        s.AppendLine("     <w>0</w>");                                          //fest erstmal
+                        s.AppendLine("     <h>0</h>");                                          //fest erstmal
+                        s.AppendLine("    </coordinates>");                                     //fest
+                        s.AppendLine($"    <panel_attributes>{pfeilart};-</panel_attributes>"); //pfeilart verändern erstmal fest
+                        s.AppendLine($"    <additional_attributes>{xveränderungpfeil}.0;{yveränderungpfeil}.0;0.0;0.0</additional_attributes>"); 
+                        //1=xbewegung vom Pfeil, vom Ziel x+1/2*width und Differenz zu start x
+                        //2=ybewegung vom Pfeil, vom Ziel y und Differenz zu start y
+                        //3 und 4 fest erstmal
+                        s.AppendLine("   </element>"); //fest
+                    }
+                }
+            }
+        }
         
         s.AppendLine(TextBlocks.FileEnd);
-        Console.WriteLine("Dein Dokument ist fertig mit " + anzahlBlöcke + " Blöcken"); //schöner schreiben
+        Console.WriteLine("Dein Dokument ist fertig mit " + anzahlBlöcke + " Blöcken"); //schöner schreiben?
         return s.ToString();
     }
 
     private static int InsertClass(List<Class> classes,
                                    StringBuilder s,
-                                   Class item,
+                                   Class currentClass,
                                    int transparency,
                                    string bgcolor,
                                    int maxItemsInRow,
@@ -121,24 +166,25 @@ internal static class Program
         int longestLineCharacterCount = 0;
         int lineCount = 0;
         int strichlineCount = 0;
-
         int classElementStartIndex = s.Length - 1;
+        currentClass.Data.X = x;
+        currentClass.Data.Y = y;
+        
+        UpdateToLongest(ref longestLineCharacterCount, currentClass.Name);
 
-        UpdateToLongest(ref longestLineCharacterCount, item.Name);
-
-        string sanitizedClassName = Sanitize(item.Name);
+        string sanitizedClassName = Sanitize(currentClass.Name);
         s.AppendLine($"*{sanitizedClassName}*");
         lineCount++;
 
-        if (item.Fields.Count > 0)
+        if (currentClass.Fields.Count > 0)
         {
-            int maxFieldTypeLength = item.Fields.Max(f => f.Type.Length);
+            int maxFieldTypeLength = currentClass.Fields.Max(f => f.Type.Length);
                 
             s.AppendLine("--");
             lineCount++;
             strichlineCount++;
                 
-            foreach (Field field in item.Fields)
+            foreach (Field field in currentClass.Fields)
             {
                 string fieldLine = $"  {field.Type.PadRight(maxFieldTypeLength)} {field.Name}";
                 UpdateToLongest(ref longestLineCharacterCount, fieldLine);
@@ -148,16 +194,16 @@ internal static class Program
             }
         }
 
-        if (item.Properties.Count > 0)
+        if (currentClass.Properties.Count > 0)
         {
-            int maxPropertyTypeLength = item.Properties.Max(p => p.Type
+            int maxPropertyTypeLength = currentClass.Properties.Max(p => p.Type
                                                                   .Length);
                 
             s.AppendLine("--");
             lineCount++;
             strichlineCount++;
                 
-            foreach (Property prop in item.Properties)
+            foreach (Property prop in currentClass.Properties)
             {
                 var paddedType = prop.Type.PadRight(maxPropertyTypeLength);
                 string propertyLine = $"  {paddedType} {prop.Name}";
@@ -169,16 +215,16 @@ internal static class Program
             }
         }
 
-        if (item.Events.Count > 0)
+        if (currentClass.Events.Count > 0)
         {
             s.AppendLine("--");
             lineCount++;
             strichlineCount++;
         }
 
-        if (item.Events.Count > 0)
+        if (currentClass.Events.Count > 0)
         {
-            foreach (Event ev in item.Events)
+            foreach (Event ev in currentClass.Events)
             {
                 string parameterTypes = "";
                 if (ev.ParameterTypes.Count > 0)
@@ -195,14 +241,14 @@ internal static class Program
                 
         }
 
-        if (item.Methods.Count > 0)
+        if (currentClass.Methods.Count > 0)
         {
             s.AppendLine("--");
             lineCount++;
             strichlineCount++;
         }
 
-        foreach (Method method in item.Methods)
+        foreach (Method method in currentClass.Methods)
         {
             string parameters = string.Join(", ", method.Parameters);
             string returnType = method.ReturnType;
@@ -234,10 +280,13 @@ internal static class Program
             return Math.Ceiling(value / multiple) * multiple;
         }
 
-        double widthnn = CeilToMultiple(longestLineCharacterCount * 6 + 8, 10);
+        double widthnn = CeilToMultiple(longestLineCharacterCount * 8.5 + 10, 10);
         int width = (int)widthnn;
-        double heightnn = CeilToMultiple((lineCount - strichlineCount) * 10 + strichlineCount * 6 + 14, 10);
+        currentClass.Data.Width = width;
+        double heightnn = CeilToMultiple((lineCount - strichlineCount) * 13 + strichlineCount * 8 + 20, 10);
         int height = (int)heightnn;
+        currentClass.Data.Height = height;
+        
         if (height >= maximumheight)
         {
             maximumheight = height; 
@@ -264,7 +313,7 @@ internal static class Program
     
     private static int InsertClass(List<Interface> interfaces,
                                    StringBuilder s,
-                                   Interface item,
+                                   Interface currentInterface,
                                    int transparency,
                                    string bgcolor,
                                    int maxItemsInRow,
@@ -278,24 +327,26 @@ internal static class Program
         int lineCount = 0;
         int strichlineCount = 0;
         bgcolor = "red";
-
+        currentInterface.Data.X = x;
+        currentInterface.Data.Y = y;
+        
         int classElementStartIndex = s.Length - 1;
 
-        UpdateToLongest(ref longestLineCharacterCount, item.Name);
+        UpdateToLongest(ref longestLineCharacterCount, currentInterface.Name);
 
-        string sanitizedClassName = Sanitize(item.Name);
+        string sanitizedClassName = Sanitize(currentInterface.Name);
         s.AppendLine($"*{sanitizedClassName}*");
         lineCount++;
 
-        if (item.Fields.Count > 0)
+        if (currentInterface.Fields.Count > 0)
         {
-            int maxFieldTypeLength = item.Fields.Max(f => f.Type.Length);
+            int maxFieldTypeLength = currentInterface.Fields.Max(f => f.Type.Length);
                 
             s.AppendLine("--");
             lineCount++;
             strichlineCount++;
                 
-            foreach (Field field in item.Fields)
+            foreach (Field field in currentInterface.Fields)
             {
                 string fieldLine = $"  {field.Type.PadRight(maxFieldTypeLength)} {field.Name}";
                 UpdateToLongest(ref longestLineCharacterCount, fieldLine);
@@ -305,16 +356,16 @@ internal static class Program
             }
         }
 
-        if (item.Properties.Count > 0)
+        if (currentInterface.Properties.Count > 0)
         {
-            int maxPropertyTypeLength = item.Properties.Max(p => p.Type
+            int maxPropertyTypeLength = currentInterface.Properties.Max(p => p.Type
                                                                   .Length);
                 
             s.AppendLine("--");
             lineCount++;
             strichlineCount++;
                 
-            foreach (Property prop in item.Properties)
+            foreach (Property prop in currentInterface.Properties)
             {
                 var paddedType = prop.Type.PadRight(maxPropertyTypeLength);
                 string propertyLine = $"  {paddedType} {prop.Name}";
@@ -326,16 +377,16 @@ internal static class Program
             }
         }
 
-        if (item.Events.Count > 0)
+        if (currentInterface.Events.Count > 0)
         {
             s.AppendLine("--");
             lineCount++;
             strichlineCount++;
         }
 
-        if (item.Events.Count > 0)
+        if (currentInterface.Events.Count > 0)
         {
-            foreach (Event ev in item.Events)
+            foreach (Event ev in currentInterface.Events)
             {
                 string parameterTypes = "";
                 if (ev.ParameterTypes.Count > 0)
@@ -352,14 +403,14 @@ internal static class Program
                 
         }
 
-        if (item.Methods.Count > 0)
+        if (currentInterface.Methods.Count > 0)
         {
             s.AppendLine("--");
             lineCount++;
             strichlineCount++;
         }
 
-        foreach (Method method in item.Methods)
+        foreach (Method method in currentInterface.Methods)
         {
             string parameters = string.Join(", ", method.Parameters);
             string returnType = method.ReturnType;
@@ -392,10 +443,13 @@ internal static class Program
             return Math.Ceiling(value / multiple) * multiple;
         }
 
-        double widthnn = CeilToMultiple(longestLineCharacterCount * 6 + 8, 10);
+        double widthnn = CeilToMultiple(longestLineCharacterCount * 8.5 + 10, 10);
         int width = (int)widthnn;
-        double heightnn = CeilToMultiple((lineCount - strichlineCount) * 10 + strichlineCount * 6 + 14, 10);
+        currentInterface.Data.Width = width;
+        double heightnn = CeilToMultiple((lineCount - strichlineCount) * 13 + strichlineCount * 8 + 20, 10);
         int height = (int)heightnn;
+        currentInterface.Data.Height = height;
+        
         if (height >= maximumheight)
         {
             maximumheight = height; 
@@ -422,7 +476,7 @@ internal static class Program
     
     private static int InsertClass(List<Enum> enums,
                                    StringBuilder s,
-                                   Enum item,
+                                   Enum currentEnum,
                                    int transparency,
                                    string bgcolor,
                                    int maxItemsInRow,
@@ -436,22 +490,24 @@ internal static class Program
         int lineCount = 0;
         int strichlineCount = 0;
         bgcolor = "green";
-
+        currentEnum.Data.X = x;
+        currentEnum.Data.Y = y;
+        
         int classElementStartIndex = s.Length - 1;
 
-        UpdateToLongest(ref longestLineCharacterCount, item.Name);
+        UpdateToLongest(ref longestLineCharacterCount, currentEnum.Name);
         
-        string sanitizedClassName = Sanitize(item.Name);
+        string sanitizedClassName = Sanitize(currentEnum.Name);
         s.AppendLine($"*{sanitizedClassName}*");
         lineCount++;
 
-        if (item.Members.Count > 0)
+        if (currentEnum.Members.Count > 0)
         {
             s.AppendLine("--");
             lineCount++;
             strichlineCount++;
                 
-            foreach (string members in item.Members)
+            foreach (string members in currentEnum.Members)
             {
                 string membersLine = $"  {members}";
                 UpdateToLongest(ref longestLineCharacterCount, membersLine);
@@ -463,7 +519,7 @@ internal static class Program
         
         s.AppendLine($"bg={bgcolor}");
         s.AppendLine($"transparency={transparency}");
-        var stepSize = 100 / (item.Members.Count - 1);
+        var stepSize = 100 / (currentEnum.Members.Count - 1);
         transparency += stepSize;
         s.Append(TextBlocks.ClassEnd);
         anzahlBlöcke++;
@@ -477,10 +533,13 @@ internal static class Program
             return Math.Ceiling(value / multiple) * multiple;
         }
 
-        double widthnn = CeilToMultiple(longestLineCharacterCount * 6 + 8, 10);
+        double widthnn = CeilToMultiple(longestLineCharacterCount * 8.5 + 10, 10);
         int width = (int)widthnn;
-        double heightnn = CeilToMultiple((lineCount - strichlineCount) * 10 + strichlineCount * 6 + 14, 10);
+        currentEnum.Data.Width = width;
+        double heightnn = CeilToMultiple((lineCount - strichlineCount) * 13 + strichlineCount * 8 + 20, 10);
         int height = (int)heightnn;
+        currentEnum.Data.Height = height;
+        
         if (height >= maximumheight)
         {
             maximumheight = height; 

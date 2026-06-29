@@ -11,7 +11,7 @@ public class Class
     public List<Event> Events { get; init; }
     public List<Method> Methods { get; init; }
 
-    public NodeData Data { get; init; }
+    public NodeData Data { get; } = new();
     public int MemberCount
     {
         get { return Fields.Count + Properties.Count + Events.Count + Methods.Count; }
@@ -54,7 +54,7 @@ public class Interface
     public List<Event> Events { get; init; }
     public List<Method> Methods { get; init; }
 
-    public NodeData Data { get; init; }
+    public NodeData Data { get; } = new();
 
     public int MemberCount
     {
@@ -66,7 +66,7 @@ public class Enum
 {
     public string Name { get; init; }
     public List<string> Members { get; init; }
-    public NodeData Data { get; init; }
+    public NodeData Data { get; } = new();
 
     public int MemberCount
     {
@@ -74,11 +74,11 @@ public class Enum
     }
 }
 
-public abstract class NodeData
+public class NodeData
 {
-    public int X { get; init; }
-    public int Y { get; init; }
+    public int X { get; set; }
+    public int Y { get; set; }
 
-    public int Height { get; init; }
-    public int Width { get; init; }
+    public int Height { get; set; }
+    public int Width { get; set; }
 }
