@@ -4,8 +4,8 @@ public class Class
 {
     public string Name { get; init; }
     public string Type { get; init; }
-    public List<Class> BaseTypes { get; init; }
-    public List<Interface> Interfaces { get; init; }
+    public string BaseClass { get; init; }
+    public List<string> Interfaces { get; init; }
     public List<Field> Fields { get; init; }
     public List<Property> Properties { get; init; }
     public List<Event> Events { get; init; }

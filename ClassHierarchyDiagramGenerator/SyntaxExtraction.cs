@@ -28,6 +28,7 @@ internal static class SyntaxExtractionFromFiles
                     List<Property> properties = new List<Property>();
                     List<Event> events = new List<Event>();
                     List<Method> methods = new List<Method>();
+                    List<string> interfaces = new List<string>();
 
                     foreach (FieldDeclarationSyntax fieldDecl in classDeclaration.Members.OfType<FieldDeclarationSyntax>())
                     {
@@ -68,13 +69,32 @@ internal static class SyntaxExtractionFromFiles
                                     });
                     }
 
+                    string baseClass = "";
+                    if (classDeclaration.BaseList != null)
+                    {
+                        var baseTypes = classDeclaration.BaseList.Types.Select(t => t.ToString()).ToArray();
+
+                        if (!baseTypes[0]
+                               .StartsWith("I"))
+                        {
+                            baseClass = baseTypes[0];
+                            interfaces.AddRange(baseTypes.Skip(1));
+                        }
+                        else
+                        {
+                            interfaces.AddRange(baseTypes);
+                        }
+                    }
+
                     sortedDescending.Add(new Class
                                          {
                                              Name = className,
                                              Fields = fields,
                                              Properties = properties,
                                              Events = events,
-                                             Methods = methods
+                                             Methods = methods,
+                                             BaseClass = baseClass,
+                                             Interfaces = interfaces
                                          });
                 }
             }

@@ -1,7 +1,4 @@
 ﻿using System.Text;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static ClassHierarchyDiagramGenerator.Utils;
 
 namespace ClassHierarchyDiagramGenerator;
