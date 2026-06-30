@@ -109,8 +109,8 @@ internal static class Program
                 {
                     if (interfaceName == @interface.Name)
                     {
-                        var classData = item.Data;
-                        var interfaceData = @interface.Data;
+                        var classData = item.LayoutData;
+                        var interfaceData = @interface.LayoutData;
                         string pfeilart = "lt=&lt;&lt";
                         double xgegeben = classData.X;    //x
                         double widthgegeben = classData.Width; //x
@@ -167,8 +167,8 @@ internal static class Program
         int lineCount = 0;
         int strichlineCount = 0;
         int classElementStartIndex = s.Length - 1;
-        currentClass.Data.X = x;
-        currentClass.Data.Y = y;
+        currentClass.LayoutData.X = x;
+        currentClass.LayoutData.Y = y;
         
         UpdateToLongest(ref longestLineCharacterCount, currentClass.Name);
 
@@ -282,10 +282,10 @@ internal static class Program
 
         double widthnn = CeilToMultiple(longestLineCharacterCount * 8.5 + 10, 10);
         int width = (int)widthnn;
-        currentClass.Data.Width = width;
+        currentClass.LayoutData.Width = width;
         double heightnn = CeilToMultiple((lineCount - strichlineCount) * 13 + strichlineCount * 8 + 20, 10);
         int height = (int)heightnn;
-        currentClass.Data.Height = height;
+        currentClass.LayoutData.Height = height;
         
         if (height >= maximumheight)
         {
@@ -327,8 +327,8 @@ internal static class Program
         int lineCount = 0;
         int strichlineCount = 0;
         bgcolor = "red";
-        currentInterface.Data.X = x;
-        currentInterface.Data.Y = y;
+        currentInterface.LayoutData.X = x;
+        currentInterface.LayoutData.Y = y;
         
         int classElementStartIndex = s.Length - 1;
 
@@ -445,10 +445,10 @@ internal static class Program
 
         double widthnn = CeilToMultiple(longestLineCharacterCount * 8.5 + 10, 10);
         int width = (int)widthnn;
-        currentInterface.Data.Width = width;
+        currentInterface.LayoutData.Width = width;
         double heightnn = CeilToMultiple((lineCount - strichlineCount) * 13 + strichlineCount * 8 + 20, 10);
         int height = (int)heightnn;
-        currentInterface.Data.Height = height;
+        currentInterface.LayoutData.Height = height;
         
         if (height >= maximumheight)
         {
@@ -490,8 +490,8 @@ internal static class Program
         int lineCount = 0;
         int strichlineCount = 0;
         bgcolor = "green";
-        currentEnum.Data.X = x;
-        currentEnum.Data.Y = y;
+        currentEnum.LayoutData.X = x;
+        currentEnum.LayoutData.Y = y;
         
         int classElementStartIndex = s.Length - 1;
 
@@ -519,7 +519,13 @@ internal static class Program
         
         s.AppendLine($"bg={bgcolor}");
         s.AppendLine($"transparency={transparency}");
-        var stepSize = 100 / (currentEnum.Members.Count - 1);
+
+        int stepSize = 100;
+        if (currentEnum.Members.Count > 1)
+        {
+            stepSize = 100 / (currentEnum.Members.Count - 1);
+        }
+        
         transparency += stepSize;
         s.Append(TextBlocks.ClassEnd);
         anzahlBlöcke++;
@@ -535,10 +541,10 @@ internal static class Program
 
         double widthnn = CeilToMultiple(longestLineCharacterCount * 8.5 + 10, 10);
         int width = (int)widthnn;
-        currentEnum.Data.Width = width;
+        currentEnum.LayoutData.Width = width;
         double heightnn = CeilToMultiple((lineCount - strichlineCount) * 13 + strichlineCount * 8 + 20, 10);
         int height = (int)heightnn;
-        currentEnum.Data.Height = height;
+        currentEnum.LayoutData.Height = height;
         
         if (height >= maximumheight)
         {

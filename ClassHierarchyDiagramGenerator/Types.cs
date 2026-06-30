@@ -1,60 +1,17 @@
 ﻿namespace ClassHierarchyDiagramGenerator;
 
-public class Class
+public sealed class Class
 {
-    public string Name { get; init; }
-    public string Type { get; init; }
-    public string BaseClass { get; init; }
-    public List<string> Interfaces { get; init; }
-    public List<Field> Fields { get; init; }
-    public List<Property> Properties { get; init; }
-    public List<Event> Events { get; init; }
-    public List<Method> Methods { get; init; }
+    public required string Name { get; init; }
+    public string Type { get; init; } = "";
+    public required string BaseClass { get; init; }
+    public required List<string> Interfaces { get; init; }
+    public required List<Field> Fields { get; init; }
+    public required List<Property> Properties { get; init; }
+    public required List<Event> Events { get; init; }
+    public required List<Method> Methods { get; init; }
 
-    public NodeData Data { get; } = new();
-    public int MemberCount
-    {
-        get { return Fields.Count + Properties.Count + Events.Count + Methods.Count; }
-    }
-}
-
-public class Method
-{
-    public string Name { get; init; }
-    public string ReturnType { get; init; }
-    public List<string> Parameters { get; init; }
-}
-
-public class Field
-{
-    public string Name { get; init; }
-    public string Type { get; init; }
-}
-
-public class Property
-{
-    public string Name { get; init; }
-    public string Type { get; init; }
-}
-
-public class Event
-{
-    public string Name { get; init; }
-    public List<string> ParameterTypes { get; init; }
-}
-
-public class Interface
-{
-    public string Name { get; init; }
-    public string Type { get; init; }
-
-    public List<Interface> Interfaces { get; init; }
-    public List<Field> Fields { get; init; }
-    public List<Property> Properties { get; init; }
-    public List<Event> Events { get; init; }
-    public List<Method> Methods { get; init; }
-
-    public NodeData Data { get; } = new();
+    public NodeLayoutData LayoutData { get; } = new();
 
     public int MemberCount
     {
@@ -62,11 +19,55 @@ public class Interface
     }
 }
 
-public class Enum
+public sealed class Method
 {
-    public string Name { get; init; }
-    public List<string> Members { get; init; }
-    public NodeData Data { get; } = new();
+    public required string Name { get; init; }
+    public required string ReturnType { get; init; }
+    public required List<string> Parameters { get; init; }
+}
+
+public sealed class Field
+{
+    public required string Name { get; init; }
+    public required string Type { get; init; }
+}
+
+public sealed class Property
+{
+    public required string Name { get; init; }
+    public required string Type { get; init; }
+}
+
+public sealed class Event
+{
+    public required string Name { get; init; }
+    public required List<string> ParameterTypes { get; init; }
+}
+
+public sealed class Interface
+{
+    public required string Name { get; init; }
+    public string Type { get; init; } = "";
+
+    public required List<Interface> Interfaces { get; init; }
+    public required List<Field> Fields { get; init; }
+    public required List<Property> Properties { get; init; }
+    public required List<Event> Events { get; init; }
+    public required List<Method> Methods { get; init; }
+
+    public NodeLayoutData LayoutData { get; } = new();
+
+    public int MemberCount
+    {
+        get { return Fields.Count + Properties.Count + Events.Count + Methods.Count; }
+    }
+}
+
+public sealed class Enum
+{
+    public required string Name { get; init; }
+    public required List<string> Members { get; init; }
+    public NodeLayoutData LayoutData { get; } = new();
 
     public int MemberCount
     {
@@ -74,7 +75,7 @@ public class Enum
     }
 }
 
-public class NodeData
+public sealed class NodeLayoutData
 {
     public int X { get; set; }
     public int Y { get; set; }

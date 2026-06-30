@@ -74,8 +74,10 @@ internal static class SyntaxExtractionFromFiles
                     {
                         var baseTypes = classDeclaration.BaseList.Types.Select(t => t.ToString()).ToArray();
 
+                        // If the class has a base class, it is the first item in baseTypes.
+                        // We assume that an interface always starts with 'I'.
                         if (!baseTypes[0]
-                               .StartsWith("I"))
+                               .StartsWith('I'))
                         {
                             baseClass = baseTypes[0];
                             interfaces.AddRange(baseTypes.Skip(1));
@@ -175,7 +177,8 @@ internal static class SyntaxExtractionFromFiles
                                              Fields = fields,
                                              Properties = properties,
                                              Events = events,
-                                             Methods = methods
+                                             Methods = methods,
+                                             Interfaces = new List<Interface>()
                                          });
                 }
             }
