@@ -5,6 +5,9 @@ namespace ClassHierarchyDiagramGenerator;
 
 internal static class Program
 {
+    private const int LineSpace = 50;
+    private const int ItemSpace = 10;
+
     public static void Main(string[] args)
     {
         // TODO: Hard-coded output for now. Better let the user decide how to call and where to save the output.
@@ -74,31 +77,48 @@ internal static class Program
         int y = 0;
         int itemsInRow = 0;
         int anzahlBlöcke = 0;
-        const int maxItemsInRow = -1;
+        const int MaxItemsInRow = 5;
+        
 
         foreach (Class item in classes)
         {
-            transparency = InsertClass(classes, s, item, transparency, bgcolor, maxItemsInRow, ref anzahlBlöcke, ref maximumheight, ref x, ref y, ref itemsInRow);
+            transparency = InsertClass(classes, s, item, transparency, bgcolor, MaxItemsInRow, ref anzahlBlöcke, ref maximumheight, ref x, ref y, out int width, ref itemsInRow);
+            
+            if (itemsInRow == MaxItemsInRow)
+            {
+                x = 0;
+                y += LineSpace + maximumheight;
+                itemsInRow = 0;
+                maximumheight = 0;
+            }
+            else
+            {
+                x += width + ItemSpace;
+            }
         }
 
         x = 0;
-        y = maximumheight + 50;
+        if (itemsInRow != 0)
+        {
+            y += LineSpace + maximumheight;
+        }
         maximumheight = 0;
         transparency = 0;
+        itemsInRow = 0;
         
         foreach (Interface item in interfaces)
         {
-            transparency = InsertClass(interfaces, s, item, transparency, bgcolor, maxItemsInRow, ref anzahlBlöcke, ref maximumheight, ref x, ref y, ref itemsInRow);
+            transparency = InsertClass(interfaces, s, item, transparency, bgcolor, MaxItemsInRow, ref anzahlBlöcke, ref maximumheight, ref x, ref y, ref itemsInRow);
         }
         
         x = 0;
-        y = y + maximumheight + 50;
+        y = y + maximumheight + LineSpace;
         maximumheight = 0;
         transparency = 0;
         
         foreach (Enum item in enums)
         {
-            transparency = InsertClass(enums, s, item, transparency, bgcolor, maxItemsInRow, ref anzahlBlöcke, ref maximumheight, ref x, ref y, ref itemsInRow);
+            transparency = InsertClass(enums, s, item, transparency, bgcolor, MaxItemsInRow, ref anzahlBlöcke, ref maximumheight, ref x, ref y, ref itemsInRow);
         }
 
         foreach (Class item in classes)
@@ -145,6 +165,57 @@ internal static class Program
                 }
             }
         }
+
+        int unterschied = 0;
+        foreach (Class item in classes)
+        {
+            if (item.BaseClass.Length > 0)
+            {
+                foreach (var baseclassName in item.BaseClass)
+                {
+                    foreach (Class name in classes)
+                    {
+                        if (baseclassName.ToString() == name.Name)
+                        { 
+                            var classData = item.LayoutData;
+                        unterschied += 20;    
+                        var interfaceData = name.LayoutData;
+                        string pfeilart = "lt=&lt;&lt;-";
+                        double xgegeben = classData.X;    //x
+                        double widthgegeben = classData.Width; //x
+                        double ygegeben = classData.Y;
+                        double heightgegeben = classData.Height;
+                        double xpfeil = xgegeben + (widthgegeben / 2); //x
+                        double ypfeil = ygegeben;
+                        int xzielgegeben = interfaceData.X;       //x
+                        int widthzielgegeben = interfaceData.Width; //x
+                        int yzielgegeben = interfaceData.Y;
+                        int heightzielgegeben = interfaceData.Height;
+                        double xende = xzielgegeben + (widthzielgegeben / 2); //x
+                        double yende = yzielgegeben;
+                        double xveränderungpfeil = -(xpfeil - xende); //x
+                        double yveränderungpfeil = -(ypfeil - yende);
+                        //for each verbindung
+                        s.AppendLine("  <element>");                                            //fest
+                        s.AppendLine("    <id>Relation</id>");                                  //fest
+                        s.AppendLine("    <coordinates>");                                      //fest
+                        s.AppendLine($"     <x>{xpfeil}</x>");                                  //vom startblock x+1/2*width (ceiltomultiple 10)
+                        s.AppendLine($"     <y>{ypfeil-unterschied}</y>");                                  //vom startblock y+height
+                        s.AppendLine("     <w>0</w>");                                          //fest erstmal
+                        s.AppendLine("     <h>0</h>");                                          //fest erstmal
+                        s.AppendLine("    </coordinates>");                                     //fest
+                        s.AppendLine($"    <panel_attributes>{pfeilart}</panel_attributes>"); //pfeilart verändern erstmal fest
+                        s.AppendLine($"    <additional_attributes>0.0;{unterschied};0.0;0.0;{xveränderungpfeil};0.0;{xveränderungpfeil};{unterschied}</additional_attributes>"); 
+                        //1=xbewegung vom Pfeil, vom Ziel x+1/2*width und Differenz zu start x
+                        //2=ybewegung vom Pfeil, vom Ziel y und Differenz zu start y
+                        //3 und 4 fest erstmal
+                        s.AppendLine("   </element>"); //fest
+                        unterschied += 10;
+                        }
+                    }
+                }
+            }
+        }
         
         s.AppendLine(TextBlocks.FileEnd);
         Console.WriteLine("Dein Dokument ist fertig mit " + anzahlBlöcke + " Blöcken"); //schöner schreiben?
@@ -161,6 +232,7 @@ internal static class Program
                                    ref int maximumheight,
                                    ref int x,
                                    ref int y,
+                                   out int width,
                                    ref int itemsInRow)
     {
         int longestLineCharacterCount = 0;
@@ -281,7 +353,7 @@ internal static class Program
         }
 
         double widthnn = CeilToMultiple(longestLineCharacterCount * 8.5 + 10, 10);
-        int width = (int)widthnn;
+        width = (int)widthnn;
         currentClass.LayoutData.Width = width;
         double heightnn = CeilToMultiple((lineCount - strichlineCount) * 13 + strichlineCount * 8 + 20, 10);
         int height = (int)heightnn;
@@ -296,18 +368,10 @@ internal static class Program
 
         itemsInRow++;
 
-        if (itemsInRow == maxItemsInRow)
-        {
-            x = 0;
-            y += 0 + maximumheight;
-            maximumheight = 0;
-            itemsInRow = 0;
-            width = 0;
-        }
+       
 
         s.Insert(classElementStartIndex, classHeader);
 
-        x += width + 0;
         return transparency;
     }
     
@@ -462,15 +526,15 @@ internal static class Program
         if (itemsInRow == maxItemsInRow)
         {
             x = 0;
-            y += 0 + maximumheight;
+            y += LineSpace + maximumheight;
             maximumheight = 0;
             itemsInRow = 0;
-            width = 0;
+            width = -10;
         }
 
         s.Insert(classElementStartIndex, classHeader);
 
-        x += width + 0;
+        x += width + 10;
         return transparency;
     }
     
@@ -552,12 +616,12 @@ internal static class Program
             y += 0 + maximumheight;
             maximumheight = 0;
             itemsInRow = 0;
-            width = 0;
+            width = -10;
         }
 
         s.Insert(classElementStartIndex, classHeader);
 
-        x += width + 0;
+        x += width + 10;
         return transparency;
     }
     private static void UpdateToLongest(ref int longestLineCharacterCount, string sanitizedClassName)
