@@ -71,6 +71,88 @@ internal static class SyntaxExtractionFromFiles
         return sortedDescending;
     }
 
+    public static List<Interface> ExtractInterfaces(string[] files)
+    {
+        List<Interface> sortedDescending = new List<Interface>();
+
+        foreach (string file in files)
+        {
+            try
+            {
+                string code = File.ReadAllText(file);
+                SyntaxTree tree = CSharpSyntaxTree.ParseText(code);
+                CompilationUnitSyntax root = tree.GetCompilationUnitRoot();
+
+                IEnumerable<InterfaceDeclarationSyntax> interfaces = root.DescendantNodes()
+                                                                      .OfType<InterfaceDeclarationSyntax>();
+
+                foreach (InterfaceDeclarationSyntax interfaceDeclaration in interfaces)
+                {
+                    string name = interfaceDeclaration.Identifier.Text;
+                    
+                    List<Field> fields = GetFields(interfaceDeclaration);
+                    List<Property> properties = GetProperties(interfaceDeclaration);
+                    List<Event> events = GetEvents(interfaceDeclaration);
+                    List<Method> methods = GetMethods(interfaceDeclaration);
+                    
+                    sortedDescending.Add(new Interface
+                                         {
+                                             Name = name,
+                                             Fields = fields,
+                                             Properties = properties,
+                                             Events = events,
+                                             Methods = methods,
+                                             Interfaces = new List<string>()
+                                         });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error reading file {file}: {ex.Message}");
+            }
+        }
+
+        return sortedDescending;
+    }
+
+    public static List<Enum> ExtractEnums(string[] files)
+    {
+        List<Enum> sortedDescending = new List<Enum>();
+
+        foreach (string file in files)
+        {
+            try
+            {
+                string code = File.ReadAllText(file);
+                SyntaxTree tree = CSharpSyntaxTree.ParseText(code);
+                CompilationUnitSyntax root = tree.GetCompilationUnitRoot();
+
+                IEnumerable<EnumDeclarationSyntax> enums = root.DescendantNodes()
+                                                               .OfType<EnumDeclarationSyntax>();
+
+                foreach (EnumDeclarationSyntax enumDeclaration in enums)
+                {
+                    string className = enumDeclaration.Identifier.Text;
+                    List<string> members = new List<string>();
+
+                    foreach (EnumMemberDeclarationSyntax enumMember in enumDeclaration.Members)
+                    {
+                        string identifier = enumMember.Identifier.Text;
+                        members.Add(identifier);
+                    }
+
+                    sortedDescending.Add(new Enum { Name = className, Members = members });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error reading file {file}: {ex.Message}");
+            }
+        }
+
+        return sortedDescending;
+    }
+    
     private static List<Method> GetMethods(TypeDeclarationSyntax typeDeclaration)
     {
         List<Method> methods = new List<Method>();
@@ -132,87 +214,5 @@ internal static class SyntaxExtractionFromFiles
         }
 
         return fields;
-    }
-
-    public static List<Interface> ExtractInterfaces(string[] files)
-    {
-        List<Interface> sortedDescending = new List<Interface>();
-
-        foreach (string file in files)
-        {
-            try
-            {
-                string code = File.ReadAllText(file);
-                SyntaxTree tree = CSharpSyntaxTree.ParseText(code);
-                CompilationUnitSyntax root = tree.GetCompilationUnitRoot();
-
-                IEnumerable<InterfaceDeclarationSyntax> interfaces = root.DescendantNodes()
-                                                                      .OfType<InterfaceDeclarationSyntax>();
-
-                foreach (InterfaceDeclarationSyntax interfaceDeclaration in interfaces)
-                {
-                    string name = interfaceDeclaration.Identifier.Text;
-                    
-                    List<Field> fields = GetFields(interfaceDeclaration);
-                    List<Property> properties = GetProperties(interfaceDeclaration);
-                    List<Event> events = GetEvents(interfaceDeclaration);
-                    List<Method> methods = GetMethods(interfaceDeclaration);
-                    
-                    sortedDescending.Add(new Interface
-                                         {
-                                             Name = name,
-                                             Fields = fields,
-                                             Properties = properties,
-                                             Events = events,
-                                             Methods = methods,
-                                             Interfaces = new List<Interface>()
-                                         });
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error reading file {file}: {ex.Message}");
-            }
-        }
-
-        return sortedDescending;
-    }
-
-    public static List<Enum> ExtractEnums(string[] files)
-    {
-        List<Enum> sortedDescending = new List<Enum>();
-
-        foreach (string file in files)
-        {
-            try
-            {
-                string code = File.ReadAllText(file);
-                SyntaxTree tree = CSharpSyntaxTree.ParseText(code);
-                CompilationUnitSyntax root = tree.GetCompilationUnitRoot();
-
-                IEnumerable<EnumDeclarationSyntax> enums = root.DescendantNodes()
-                                                               .OfType<EnumDeclarationSyntax>();
-
-                foreach (EnumDeclarationSyntax enumDeclaration in enums)
-                {
-                    string className = enumDeclaration.Identifier.Text;
-                    List<string> members = new List<string>();
-
-                    foreach (EnumMemberDeclarationSyntax enumMember in enumDeclaration.Members)
-                    {
-                        string identifier = enumMember.Identifier.Text;
-                        members.Add(identifier);
-                    }
-
-                    sortedDescending.Add(new Enum { Name = className, Members = members });
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error reading file {file}: {ex.Message}");
-            }
-        }
-
-        return sortedDescending;
     }
 }

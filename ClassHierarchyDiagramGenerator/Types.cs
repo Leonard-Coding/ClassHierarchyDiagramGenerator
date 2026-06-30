@@ -49,7 +49,7 @@ public sealed class Interface
     public required string Name { get; init; }
     public string Type { get; init; } = "";
 
-    public required List<Interface> Interfaces { get; init; }
+    public required List<string> Interfaces { get; init; }
     public required List<Field> Fields { get; init; }
     public required List<Property> Properties { get; init; }
     public required List<Event> Events { get; init; }
