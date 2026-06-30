@@ -16,6 +16,68 @@ internal class C4 : B, I1, I2
     
 }
 
+// Basis-Interface 1
+public interface IDrawable
+{
+    void Draw();
+}
+
+// Basis-Interface 2
+public interface IShape
+{
+    double Area { get; }
+}
+
+// Abgeleitetes Interface erbt von beiden
+public interface IColoredShape : IDrawable, IShape
+{
+    string Color { get; }
+}
+
+// Klasse implementiert das abgeleitete Interface
+public class Circle : IColoredShape
+{
+    public double Radius { get; }
+    public string Color { get; }
+
+    public Circle(double radius, string color)
+    {
+        if (radius <= 0)
+            throw new ArgumentException("Radius muss größer als 0 sein.");
+        if (string.IsNullOrWhiteSpace(color))
+            throw new ArgumentException("Farbe darf nicht leer sein.");
+
+        Radius = radius;
+        Color = color;
+    }
+
+    // Implementierung von IShape
+    public double Area => Math.PI * Radius * Radius;
+
+    // Implementierung von IDrawable
+    public void Draw()
+    {
+        Console.WriteLine($"Zeichne einen {Color}-Kreis mit Fläche {Area:F2}");
+    }
+}
+
+class adssda
+{
+    static void Mainasd()
+    {
+        try
+        {
+            IColoredShape shape = new Circle(5, "Rot");
+            shape.Draw();
+            Console.WriteLine($"Farbe: {shape.Color}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Fehler: {ex.Message}");
+        }
+    }
+}
+
 internal sealed class testblock
 {
     public int uhrzeitinsec = 10 * 60 * 60 + 37 * 60 + 12;
