@@ -10,48 +10,36 @@ internal static class Program
 
     public static void Main(string[] args)
     {
-        // TODO: Hard-coded output for now. Better let the user decide how to call and where to save the output.
         const string outputPath = "output.uxf";
         
-        // Wenn die Länge vom eingegebenen Path 0 ist, also kein Path eingegeben wurde
         if (args.Length == 0)
         {
             Console.WriteLine("Please provide a path to a directory as a command line argument.");
             return;
-            
         }
-
-        int anzahlBlöcke = 0;
         
-        // ändert das die Schriftart zu Monospaced? 
         string path = args[0];
         
-        // Wenn er nicht(!) existiert der Path dann
         if (!Directory.Exists(path))
         {
             Console.WriteLine($"The directory '{path}' does not exist.");
             return;
         }
         
-        //er sucht nach cs files und fügt sie zur Liste files hinzu
         string[] files = Directory.GetFiles(path, "*.cs", SearchOption.AllDirectories);
-
-        // wenn die Anzahl an files in der Liste files 0 ist dann
+        
         if (files.Length == 0)
         {
             Console.WriteLine("No C# files found in the directory.");
             return;
         }
 
-        // 
         List<Class> collectedClasses = SyntaxExtractionFromFiles.ExtractClasses(files).OrderByDescending(c => c.MemberCount).ToList();
         List<Interface> collectedInterfaces = SyntaxExtractionFromFiles.ExtractInterfaces(files).OrderByDescending(i => i.MemberCount).ToList();
         List<Enum> collectedEnums = SyntaxExtractionFromFiles.ExtractEnums(files).OrderByDescending(e => e.MemberCount).ToList();
         
-        //
         string fileContent = GenerateDiagramFileContent(collectedClasses, collectedInterfaces, collectedEnums);
-
-        //er schreibt in das output document alles rein, aber was genau ist catch? output path ist, wohin das output dokument muss?
+        
         try
         {
             File.WriteAllText(outputPath, fileContent);
@@ -62,87 +50,85 @@ internal static class Program
         }
     }
     
-
-    // hier wird dann berechnet, wo und wie das in umlet muss?
+    
     private static string GenerateDiagramFileContent(List<Class> classes, List<Interface> interfaces, List<Enum> enums)
     {
         StringBuilder s = new StringBuilder();
 
         s.AppendLine(TextBlocks.FileBeginFormat);
         
-        int maximumheight = 0;
+        int maxHeight = 0;
         int x = 0;
         int y = 0;
         int itemsInRow = 0;
-        int anzahlBlöcke = 0;
-        const int MaxItemsInRow = -1;
+        int blockCount = 0;
+        const int maxItemsInRow = -1;
         
-
         foreach (Class item in classes)
         {
-            InsertClass(classes, s, item, ref anzahlBlöcke, ref maximumheight, ref x, ref y, out int width, ref itemsInRow);
+            InsertClass(classes, s, item, ref blockCount, ref maxHeight, ref x, ref y, out double width, ref itemsInRow);
             
-            if (itemsInRow == MaxItemsInRow)
+            if (itemsInRow == maxItemsInRow)
             {
                 x = 0;
-                y += LineSpace + maximumheight;
+                y += LineSpace + maxHeight;
                 itemsInRow = 0;
-                maximumheight = 0;
+                maxHeight = 0;
             }
             else
             {
-                x += width + ItemSpace;
+                x += (int)width + ItemSpace;
             }
         }
         
         x = 0;
         if (itemsInRow != 0)
         {
-            y += LineSpace + maximumheight;
+            y += LineSpace + maxHeight;
         }
-        maximumheight = 0;
+        maxHeight = 0;
         itemsInRow = 0;
         
         foreach (Interface currentInterface in interfaces)
         {
-            InsertInterface(interfaces, s, currentInterface, ref anzahlBlöcke, ref maximumheight, ref x, ref y, out int width, ref itemsInRow);
+            InsertInterface(interfaces, s, currentInterface, ref blockCount, ref maxHeight, ref x, ref y, out double width);
             
-            if (itemsInRow == MaxItemsInRow)
+            if (itemsInRow == maxItemsInRow)
             {
                 x = 0;
-                y += LineSpace + maximumheight;
+                y += LineSpace + maxHeight;
                 itemsInRow = 0;
-                maximumheight = 0;
+                maxHeight = 0;
             }
             else
             {
-                x += width + ItemSpace;
+                x += (int)width + ItemSpace;
             }
         }
         
-        y += LineSpace + maximumheight;
+        y += LineSpace + maxHeight;
         x = 0;
         if (itemsInRow != 0)
         {
-            y += LineSpace + maximumheight;
+            y += LineSpace + maxHeight;
         }
-        maximumheight = 0;
+        maxHeight = 0;
         itemsInRow = 0;
         
         foreach (Enum currentEnum in enums)
         {
-            InsertEnum(enums, s, currentEnum, ref anzahlBlöcke, ref maximumheight, ref x, ref y, out int width, ref itemsInRow);
+            InsertEnum(enums, s, currentEnum, ref blockCount, ref maxHeight, ref x, ref y, out double width, ref itemsInRow);
             
-            if (itemsInRow == MaxItemsInRow)
+            if (itemsInRow == maxItemsInRow)
             {
                 x = 0;
-                y += LineSpace + maximumheight;
+                y += LineSpace + maxHeight;
                 itemsInRow = 0;
-                maximumheight = 0;
+                maxHeight = 0;
             }
             else
             {
-                x += width + ItemSpace;
+                x += (int)width + ItemSpace;
             }
         }
 
@@ -154,135 +140,118 @@ internal static class Program
                 {
                     if (interfaceName == @interface.Name)
                     {
+                        const string arrowType = "lt=&lt;&lt;-";
                         var classData = item.LayoutData;
                         var interfaceData = @interface.LayoutData;
-                        string pfeilart = "lt=&lt;&lt;-";
-                        double xgegeben = classData.X;    //x
-                        double widthgegeben = classData.Width; //x
-                        double ygegeben = classData.Y;
-                        double heightgegeben = classData.Height;
-                        double xpfeil = xgegeben + (widthgegeben / 2); //x
-                        double ypfeil = ygegeben + heightgegeben;
-                        int xzielgegeben = interfaceData.X;       //x
-                        int widthzielgegeben = interfaceData.Width; //x
-                        int yzielgegeben = interfaceData.Y;
-                        double xende = xzielgegeben + (widthzielgegeben / 2); //x
-                        double yende = yzielgegeben;
-                        double xveränderungpfeil = -(xpfeil - xende); //x
-                        double yveränderungpfeil = -(ypfeil - yende);
-                        //for each verbindung
-                        s.AppendLine("  <element>");                                            //fest
-                        s.AppendLine("    <id>Relation</id>");                                  //fest
-                        s.AppendLine("    <coordinates>");                                      //fest
-                        s.AppendLine($"     <x>{xpfeil}</x>");                                  //vom startblock x+1/2*width (ceiltomultiple 10)
-                        s.AppendLine($"     <y>{ypfeil}</y>");                                  //vom startblock y+height
-                        s.AppendLine("     <w>0</w>");                                          //fest erstmal
-                        s.AppendLine("     <h>0</h>");                                          //fest erstmal
-                        s.AppendLine("    </coordinates>");                                     //fest
-                        s.AppendLine($"    <panel_attributes>{pfeilart}</panel_attributes>"); //pfeilart verändern erstmal fest
-                        s.AppendLine($"    <additional_attributes>{xveränderungpfeil}.0;{yveränderungpfeil}.0;0.0;0.0</additional_attributes>"); 
-                        //1=xbewegung vom Pfeil, vom Ziel x+1/2*width und Differenz zu start x
-                        //2=ybewegung vom Pfeil, vom Ziel y und Differenz zu start y
-                        //3 und 4 fest erstmal
-                        s.AppendLine("   </element>"); //fest
+                        var xClass = classData.X;
+                        var widthClass = classData.Width;
+                        var yClass = classData.Y;
+                        var heightClass = classData.Height;
+                        var xArrowClass = xClass + (widthClass / 2);
+                        var yArrowClass = yClass + heightClass;
+                        int xInterface = interfaceData.X;
+                        var widthInterface = interfaceData.Width;
+                        var yInterface = interfaceData.Y;
+                        var xArrowInterface = xInterface + (widthInterface / 2);
+                        var xDifference = -(xArrowClass - xArrowInterface);
+                        var yDifference = -(yArrowClass - yInterface);
+                        s.AppendLine("  <element>");
+                        s.AppendLine("    <id>Relation</id>");
+                        s.AppendLine("    <coordinates>");
+                        s.AppendLine($"     <x>{xArrowClass}</x>");
+                        s.AppendLine($"     <y>{yArrowClass}</y>");
+                        s.AppendLine("     <w>0</w>");
+                        s.AppendLine("     <h>0</h>");
+                        s.AppendLine("    </coordinates>");
+                        s.AppendLine($"    <panel_attributes>{arrowType}</panel_attributes>");
+                        s.AppendLine($"    <additional_attributes>{xDifference}.0;{yDifference}.0;0.0;0.0</additional_attributes>"); 
+                        s.AppendLine("   </element>");
                     }
                 }
             }
         }
 
-        int unterschied = 0;
+        int heightDifference = 0;
         foreach (Class item in classes)
         {
             if (item.BaseClass.Length > 0)
             {
-                foreach (var baseclassName in item.BaseClass)
+                foreach (var baseClassName in item.BaseClass)
                 {
-                    foreach (Class name in classes)
+                    foreach (Class @class in classes)
                     {
-                        if (baseclassName.ToString() == name.Name)
+                        if (baseClassName.ToString() == @class.Name)
                         {    
+                            heightDifference += 20;    
+                            const string arrowType = "lt=-&gt;&gt;";
                             var classData = item.LayoutData;
-                            unterschied += 20;    
-                            var interfaceData = name.LayoutData;
-                            string pfeilart = "lt=-&gt;&gt;";
-                            double xgegeben = classData.X;    //x
-                            double widthgegeben = classData.Width; //x
-                            double ygegeben = classData.Y;
-                            double xpfeil = xgegeben + (widthgegeben / 2); //x
-                            double ypfeil = ygegeben;
-                            int xzielgegeben = interfaceData.X;       //x
-                            int widthzielgegeben = interfaceData.Width; //x
-                            int yzielgegeben = interfaceData.Y;
-                            double xende = xzielgegeben + (widthzielgegeben / 2); //x
-                            double yende = yzielgegeben;
-                            double xveränderungpfeil = -(xpfeil - xende); //x
-                            double yveränderungpfeil = -(ypfeil - yende);
-                            //for each verbindung
-                            s.AppendLine("  <element>");                                            //fest
-                            s.AppendLine("    <id>Relation</id>");                                  //fest
-                            s.AppendLine("    <coordinates>");                                      //fest
-                            s.AppendLine($"     <x>{xpfeil}</x>");                                  //vom startblock x+1/2*width (ceiltomultiple 10)
-                            s.AppendLine($"     <y>{ypfeil-unterschied+yveränderungpfeil}</y>");                                  //vom startblock y+height
-                            s.AppendLine("     <w>0</w>");                                          //fest erstmal
-                            s.AppendLine("     <h>0</h>");                                          //fest erstmal
-                            s.AppendLine("    </coordinates>");                                     //fest
-                            s.AppendLine($"    <panel_attributes>{pfeilart}</panel_attributes>"); //pfeilart verändern erstmal fest
-                            s.AppendLine($"    <additional_attributes>0.0;{-yveränderungpfeil+unterschied};0.0;0.0;{xveränderungpfeil};0.0;{xveränderungpfeil};{unterschied}</additional_attributes>"); 
-                            //1=xbewegung vom Pfeil, vom Ziel x+1/2*width und Differenz zu start x
-                            //2=ybewegung vom Pfeil, vom Ziel y und Differenz zu start y
-                            //3 und 4 fest erstmal
-                            s.AppendLine("   </element>"); //fest
-                            unterschied += 10;
+                            var interfaceData = @class.LayoutData;
+                            var xClass = classData.X;
+                            var widthClass = classData.Width;
+                            var yClass = classData.Y;
+                            var xArrowClass = xClass + (widthClass / 2);
+                            var xInterface = interfaceData.X; 
+                            var widthInterface = interfaceData.Width;
+                            var yInterface = interfaceData.Y;
+                            var xArrowInterface = xInterface + (widthInterface / 2);
+                            var xDifference = -(xArrowClass - xArrowInterface);
+                            var yDifference = -(yClass - yInterface);
+                            s.AppendLine("  <element>");
+                            s.AppendLine("    <id>Relation</id>");
+                            s.AppendLine("    <coordinates>");
+                            s.AppendLine($"     <x>{xArrowClass}</x>");
+                            s.AppendLine($"     <y>{yClass-heightDifference+yDifference}</y>");
+                            s.AppendLine("     <w>0</w>");
+                            s.AppendLine("     <h>0</h>");
+                            s.AppendLine("    </coordinates>");
+                            s.AppendLine($"    <panel_attributes>{arrowType}</panel_attributes>");
+                            s.AppendLine($"    <additional_attributes>0.0;{-yDifference+heightDifference};0.0;0.0;{xDifference};0.0;{xDifference};{heightDifference}</additional_attributes>"); 
+                            s.AppendLine("   </element>");
+                            heightDifference += 10;
                         }
                     }
                 }
             }
         }
         
-        unterschied = 0;
+        int heightDifferenceInterfaces = 0;
         foreach (Interface item in interfaces)
         {
             if (item.Interfaces.Count > 0)
             {
-                foreach (var interfacename in item.Interfaces)
+                foreach (var interfaceName in item.Interfaces)
                 {
                     foreach (Interface names in interfaces)
                     {
-                        if (interfacename == names.Name)
+                        if (interfaceName == names.Name)
                         {    
+                            heightDifferenceInterfaces -= 20;    
+                            const string arrowType = "lt=-&gt;&gt;";
                             var classData = item.LayoutData;
-                            unterschied -= 20;    
                             var interfaceData = names.LayoutData;
-                            string pfeilart = "lt=-&gt;&gt;";
-                            double xgegeben = classData.X;    //x
-                            double widthgegeben = classData.Width; //x
-                            double ygegeben = classData.Y;
-                            double heightgegeben = classData.Height;
-                            double xpfeil = xgegeben + (widthgegeben / 2); //x
-                            double ypfeil = ygegeben;
-                            int xzielgegeben = interfaceData.X;       //x
-                            int widthzielgegeben = interfaceData.Width; //x
-                            int yzielgegeben = interfaceData.Y;
-                            double xende = xzielgegeben + (widthzielgegeben / 2); //x
-                            double yende = yzielgegeben;
-                            double xveränderungpfeil = -(xpfeil - xende); //x
-                            double yveränderungpfeil = -(ypfeil - yende);
-                            //for each verbindung
-                            s.AppendLine("  <element>");                                            //fest
-                            s.AppendLine("    <id>Relation</id>");                                  //fest
-                            s.AppendLine("    <coordinates>");                                      //fest
-                            s.AppendLine($"     <x>{xpfeil}</x>");                                  //vom startblock x+1/2*width (ceiltomultiple 10)
-                            s.AppendLine($"     <y>{ygegeben+heightgegeben-unterschied}</y>");                                  //vom startblock y+height
-                            s.AppendLine("     <w>0</w>");                                          //fest erstmal
-                            s.AppendLine("     <h>0</h>");                                          //fest erstmal
-                            s.AppendLine("    </coordinates>");                                     //fest
-                            s.AppendLine($"    <panel_attributes>{pfeilart}</panel_attributes>"); //pfeilart verändern erstmal fest
-                            s.AppendLine($"    <additional_attributes>0.0;{-yveränderungpfeil+unterschied};0.0;0.0;{xveränderungpfeil};0.0;{xveränderungpfeil};{unterschied}</additional_attributes>"); 
-                            //1=xbewegung vom Pfeil, vom Ziel x+1/2*width und Differenz zu start x
-                            //2=ybewegung vom Pfeil, vom Ziel y und Differenz zu start y
-                            //3 und 4 fest erstmal
+                            var xInterface2 = classData.X;
+                            var widthInterface2 = classData.Width;
+                            var yInterface2 = classData.Y;
+                            var heightInterface2 = classData.Height;
+                            var xArrowInterface2 = xInterface2 + (widthInterface2 / 2);
+                            var xInterface = interfaceData.X;
+                            var widthInterface = interfaceData.Width;
+                            var yInterface = interfaceData.Y;
+                            var xArrowInterface = xInterface + (widthInterface / 2);
+                            var xDifference = -(xArrowInterface2 - xArrowInterface);
+                            var yDifference = -(yInterface2 - yInterface);
+                            s.AppendLine("  <element>");
+                            s.AppendLine("    <id>Relation</id>");
+                            s.AppendLine("    <coordinates>");
+                            s.AppendLine($"     <x>{xArrowInterface2}</x>");
+                            s.AppendLine($"     <y>{yInterface2+heightInterface2-heightDifferenceInterfaces}</y>");
+                            s.AppendLine("     <w>0</w>");
+                            s.AppendLine("     <h>0</h>");
+                            s.AppendLine("    </coordinates>");
+                            s.AppendLine($"    <panel_attributes>{arrowType}</panel_attributes>");
+                            s.AppendLine($"    <additional_attributes>0.0;{-yDifference+heightDifferenceInterfaces};0.0;0.0;{xDifference};0.0;{xDifference};{heightDifferenceInterfaces}</additional_attributes>");
                             s.AppendLine("   </element>"); //fest
-                            unterschied += 10;
+                            heightDifferenceInterfaces += 10;
                         }
                     }
                 }
@@ -290,23 +259,23 @@ internal static class Program
         }
         
         s.AppendLine(TextBlocks.FileEnd);
-        Console.WriteLine("Dein Dokument ist fertig mit " + anzahlBlöcke + " Blöcken"); //schöner schreiben?
+        Console.WriteLine($"Your Document finished generating and includes {blockCount} blocks");
         return s.ToString();
     }
 
     private static void InsertClass(List<Class> classes,
                                    StringBuilder s,
                                    Class currentClass,
-                                   ref int anzahlBlöcke,
-                                   ref int maximumheight,
+                                   ref int blockCount,
+                                   ref int maxHeight,
                                    ref int x,
                                    ref int y,
-                                   out int width,
+                                   out double width,
                                    ref int itemsInRow)
     {
         int longestLineCharacterCount = 0;
         int lineCount = 0;
-        int strichlineCount = 0;
+        int divideLineCount = 0;
         int classElementStartIndex = s.Length - 1;
         currentClass.LayoutData.X = x;
         currentClass.LayoutData.Y = y;
@@ -323,7 +292,7 @@ internal static class Program
                 
             s.AppendLine("--");
             lineCount++;
-            strichlineCount++;
+            divideLineCount++;
                 
             foreach (Field field in currentClass.Fields)
             {
@@ -337,12 +306,11 @@ internal static class Program
 
         if (currentClass.Properties.Count > 0)
         {
-            int maxPropertyTypeLength = currentClass.Properties.Max(p => p.Type
-                                                                  .Length);
+            int maxPropertyTypeLength = currentClass.Properties.Max(p => p.Type.Length);
                 
             s.AppendLine("--");
             lineCount++;
-            strichlineCount++;
+            divideLineCount++;
                 
             foreach (Property prop in currentClass.Properties)
             {
@@ -360,7 +328,7 @@ internal static class Program
         {
             s.AppendLine("--");
             lineCount++;
-            strichlineCount++;
+            divideLineCount++;
         }
 
         if (currentClass.Events.Count > 0)
@@ -386,7 +354,7 @@ internal static class Program
         {
             s.AppendLine("--");
             lineCount++;
-            strichlineCount++;
+            divideLineCount++;
         }
 
         foreach (Method method in currentClass.Methods)
@@ -408,9 +376,8 @@ internal static class Program
         s.AppendLine($"bg={currentClass.LayoutData.Color}");
         s.AppendLine("transparency=0");
         s.Append(TextBlocks.ClassEnd);
-        anzahlBlöcke++;
-            
-        // now we know how wide the class element should become
+        blockCount++;
+        
         static double CeilToMultiple(double value, double multiple)
         {
             if (multiple == 0)
@@ -419,16 +386,14 @@ internal static class Program
             return Math.Ceiling(value / multiple) * multiple;
         }
 
-        double widthnn = CeilToMultiple(longestLineCharacterCount * 8.5 + 10, 10);
-        width = (int)widthnn;
-        currentClass.LayoutData.Width = width;
-        double heightnn = CeilToMultiple((lineCount - strichlineCount) * 13 + strichlineCount * 8 + 20, 10);
-        int height = (int)heightnn;
-        currentClass.LayoutData.Height = height;
+        width = CeilToMultiple(longestLineCharacterCount * 8.5 + 10, 10);
+        currentClass.LayoutData.Width = (int)width;
+        double height = CeilToMultiple((lineCount - divideLineCount) * 13 + divideLineCount * 8 + 20, 10);
+        currentClass.LayoutData.Height = (int)height;
         
-        if (height >= maximumheight)
+        if (height >= maxHeight)
         {
-            maximumheight = height; 
+            maxHeight = (int)height; 
         }
             
         string classHeader = string.Format(TextBlocks.ClassBeginFormat, x, y, width, height);
@@ -443,12 +408,11 @@ internal static class Program
     private static void InsertInterface(List<Interface> interfaces,
                                        StringBuilder s,
                                        Interface currentInterface,
-                                       ref int anzahlBlöcke,
-                                       ref int maximumheight,
+                                       ref int blockCount,
+                                       ref int maxHeight,
                                        ref int x,
                                        ref int y,
-                                       out int width,
-                                       ref int itemsInRow)
+                                       out double width)
     {
         int longestLineCharacterCount = 0;
         int lineCount = 0;
@@ -556,7 +520,7 @@ internal static class Program
         s.AppendLine($"bg={currentInterface.LayoutData.Color}");
         s.AppendLine($"transparency=0");
         s.Append(TextBlocks.ClassEnd);
-        anzahlBlöcke++;
+        blockCount++;
             
         // now we know how wide the class element should become
         static double CeilToMultiple(double value, double multiple)
@@ -567,16 +531,15 @@ internal static class Program
             return Math.Ceiling(value / multiple) * multiple;
         }
 
-        double widthnn = CeilToMultiple(longestLineCharacterCount * 8.5 + 10, 10);
-        width = (int)widthnn;
-        currentInterface.LayoutData.Width = width;
-        double heightnn = CeilToMultiple((lineCount - strichlineCount) * 13 + strichlineCount * 8 + 20, 10);
-        int height = (int)heightnn;
-        currentInterface.LayoutData.Height = height;
+        width = CeilToMultiple(longestLineCharacterCount * 8.5 + 10, 10);
+        currentInterface.LayoutData.Width = (int)width;
         
-        if (height >= maximumheight)
+        double height = CeilToMultiple((lineCount - strichlineCount) * 13 + strichlineCount * 8 + 20, 10);
+        currentInterface.LayoutData.Height = (int)height;
+        
+        if (height >= maxHeight)
         {
-            maximumheight = height; 
+            maxHeight = (int)height; 
         }
             
         string classHeader = string.Format(TextBlocks.ClassBeginFormat, x, y, width, height);
@@ -587,11 +550,11 @@ internal static class Program
     private static void InsertEnum(List<Enum> enums,
                                    StringBuilder s,
                                    Enum currentEnum,
-                                   ref int anzahlBlöcke,
-                                   ref int maximumheight,
+                                   ref int blockCount,
+                                   ref int maxHeight,
                                    ref int x,
                                    ref int y,
-                                   out int width,
+                                   out double width,
                                    ref int itemsInRow)
     {
         int longestLineCharacterCount = 0;
@@ -627,7 +590,7 @@ internal static class Program
         s.AppendLine($"bg={currentEnum.LayoutData.Color}");
         s.AppendLine("transparency=0");
         s.Append(TextBlocks.ClassEnd);
-        anzahlBlöcke++;
+        blockCount++;
             
         // now we know how wide the class element should become
         static double CeilToMultiple(double value, double multiple)
@@ -638,16 +601,15 @@ internal static class Program
             return Math.Ceiling(value / multiple) * multiple;
         }
 
-        double widthnn = CeilToMultiple(longestLineCharacterCount * 8.5 + 10, 10);
-        width = (int)widthnn;
-        currentEnum.LayoutData.Width = width;
-        double heightnn = CeilToMultiple((lineCount - strichlineCount) * 13 + strichlineCount * 8 + 20, 10);
-        int height = (int)heightnn;
-        currentEnum.LayoutData.Height = height;
+        width = CeilToMultiple(longestLineCharacterCount * 8.5 + 10, 10);
+        currentEnum.LayoutData.Width = (int)width;
         
-        if (height >= maximumheight)
+        double height = CeilToMultiple((lineCount - strichlineCount) * 13 + strichlineCount * 8 + 20, 10);
+        currentEnum.LayoutData.Height = (int)height;
+        
+        if (height >= maxHeight)
         {
-            maximumheight = height; 
+            maxHeight = (int)height; 
         }
             
         string classHeader = string.Format(TextBlocks.ClassBeginFormat, x, y, width, height);
