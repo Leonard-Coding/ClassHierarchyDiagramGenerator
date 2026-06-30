@@ -24,31 +24,12 @@ internal static class SyntaxExtractionFromFiles
                 foreach (ClassDeclarationSyntax classDeclaration in classes)
                 {
                     string className = classDeclaration.Identifier.Text;
-                    List<string> interfaces = new List<string>();
 
                     List<Field> fields = GetFields(classDeclaration);
                     List<Property> properties = GetProperties(classDeclaration);
                     List<Event> events = GetEvents(classDeclaration);
                     List<Method> methods = GetMethods(classDeclaration);
-
-                    string baseClass = "";
-                    if (classDeclaration.BaseList != null)
-                    {
-                        var baseTypes = classDeclaration.BaseList.Types.Select(t => t.ToString()).ToArray();
-
-                        // If the class has a base class, it is the first item in baseTypes.
-                        // We assume that an interface always starts with 'I'.
-                        if (!baseTypes[0]
-                               .StartsWith('I'))
-                        {
-                            baseClass = baseTypes[0];
-                            interfaces.AddRange(baseTypes.Skip(1));
-                        }
-                        else
-                        {
-                            interfaces.AddRange(baseTypes);
-                        }
-                    }
+                    List<string> interfaces = GetInheritedTypes(classDeclaration, out string baseClass);
 
                     sortedDescending.Add(new Class
                                          {
@@ -84,17 +65,18 @@ internal static class SyntaxExtractionFromFiles
                 CompilationUnitSyntax root = tree.GetCompilationUnitRoot();
 
                 IEnumerable<InterfaceDeclarationSyntax> interfaces = root.DescendantNodes()
-                                                                      .OfType<InterfaceDeclarationSyntax>();
+                                                                         .OfType<InterfaceDeclarationSyntax>();
 
                 foreach (InterfaceDeclarationSyntax interfaceDeclaration in interfaces)
                 {
                     string name = interfaceDeclaration.Identifier.Text;
-                    
+
                     List<Field> fields = GetFields(interfaceDeclaration);
                     List<Property> properties = GetProperties(interfaceDeclaration);
                     List<Event> events = GetEvents(interfaceDeclaration);
                     List<Method> methods = GetMethods(interfaceDeclaration);
-                    
+                    List<string> inherited = GetInheritedTypes(interfaceDeclaration, out string _);
+
                     sortedDescending.Add(new Interface
                                          {
                                              Name = name,
@@ -102,7 +84,7 @@ internal static class SyntaxExtractionFromFiles
                                              Properties = properties,
                                              Events = events,
                                              Methods = methods,
-                                             Interfaces = new List<string>()
+                                             Interfaces = inherited
                                          });
                 }
             }
@@ -152,7 +134,36 @@ internal static class SyntaxExtractionFromFiles
 
         return sortedDescending;
     }
-    
+
+    private static List<string> GetInheritedTypes(TypeDeclarationSyntax typeDeclaration, out string baseClass)
+    {
+        List<string> interfaces = new List<string>();
+        baseClass = "";
+
+        if (typeDeclaration.BaseList == null)
+        {
+            return interfaces;
+        }
+
+        var baseTypes = typeDeclaration.BaseList.Types.Select(t => t.ToString())
+                                       .ToArray();
+
+        // If the class has a base class, it is the first item in baseTypes.
+        // We assume that an interface always starts with 'I'.
+        if (!baseTypes[0]
+               .StartsWith('I'))
+        {
+            baseClass = baseTypes[0];
+            interfaces.AddRange(baseTypes.Skip(1));
+        }
+        else
+        {
+            interfaces.AddRange(baseTypes);
+        }
+
+        return interfaces;
+    }
+
     private static List<Method> GetMethods(TypeDeclarationSyntax typeDeclaration)
     {
         List<Method> methods = new List<Method>();
