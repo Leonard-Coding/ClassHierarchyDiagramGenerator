@@ -96,7 +96,7 @@ internal static class Program
                 x += width + ItemSpace;
             }
         }
-
+        
         x = 0;
         if (itemsInRow != 0)
         {
