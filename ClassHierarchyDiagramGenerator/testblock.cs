@@ -10,7 +10,11 @@ internal interface I2{}
 internal class C1:I1{}
 internal class C2:I2{}
 internal class C3:I1, I2{}
-internal class C4: B, I1, I2{}
+
+internal class C4 : B, I1, I2
+{
+    
+}
 
 internal sealed class testblock
 {

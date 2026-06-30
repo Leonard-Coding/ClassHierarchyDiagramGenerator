@@ -24,50 +24,12 @@ internal static class SyntaxExtractionFromFiles
                 foreach (ClassDeclarationSyntax classDeclaration in classes)
                 {
                     string className = classDeclaration.Identifier.Text;
-                    List<Field> fields = new List<Field>();
-                    List<Property> properties = new List<Property>();
-                    List<Event> events = new List<Event>();
-                    List<Method> methods = new List<Method>();
                     List<string> interfaces = new List<string>();
 
-                    foreach (FieldDeclarationSyntax fieldDecl in classDeclaration.Members.OfType<FieldDeclarationSyntax>())
-                    {
-                        string type = fieldDecl.Declaration.Type.ToString();
-                        foreach (VariableDeclaratorSyntax variable in fieldDecl.Declaration.Variables)
-                        {
-                            fields.Add(new Field { Name = variable.Identifier.Text, Type = type });
-                        }
-                    }
-
-                    foreach (PropertyDeclarationSyntax propDecl in classDeclaration.Members.OfType<PropertyDeclarationSyntax>())
-                    {
-                        properties.Add(new Property { Name = propDecl.Identifier.Text, Type = propDecl.Type.ToString() });
-                    }
-
-                    foreach (EventFieldDeclarationSyntax eventDecl in classDeclaration.Members.OfType<EventFieldDeclarationSyntax>())
-                    {
-                        List<string> parameterTypes = new List<string>();
-                        if (eventDecl.Declaration.Type is GenericNameSyntax genericName)
-                        {
-                            parameterTypes.AddRange(genericName.TypeArgumentList.Arguments.Select(a => a.ToString()));
-                        }
-
-                        foreach (VariableDeclaratorSyntax variable in eventDecl.Declaration.Variables)
-                        {
-                            events.Add(new Event { Name = variable.Identifier.Text, ParameterTypes = parameterTypes });
-                        }
-                    }
-
-                    foreach (MethodDeclarationSyntax methodDecl in classDeclaration.Members.OfType<MethodDeclarationSyntax>())
-                    {
-                        methods.Add(new Method
-                                    {
-                                        Name = methodDecl.Identifier.Text,
-                                        ReturnType = methodDecl.ReturnType.ToString(),
-                                        Parameters = methodDecl.ParameterList.Parameters.Select(p => p.Identifier.Text)
-                                                               .ToList()
-                                    });
-                    }
+                    List<Field> fields = GetFields(classDeclaration);
+                    List<Property> properties = GetProperties(classDeclaration);
+                    List<Event> events = GetEvents(classDeclaration);
+                    List<Method> methods = GetMethods(classDeclaration);
 
                     string baseClass = "";
                     if (classDeclaration.BaseList != null)
@@ -109,6 +71,69 @@ internal static class SyntaxExtractionFromFiles
         return sortedDescending;
     }
 
+    private static List<Method> GetMethods(TypeDeclarationSyntax typeDeclaration)
+    {
+        List<Method> methods = new List<Method>();
+        foreach (MethodDeclarationSyntax methodDecl in typeDeclaration.Members.OfType<MethodDeclarationSyntax>())
+        {
+            methods.Add(new Method
+                        {
+                            Name = methodDecl.Identifier.Text,
+                            ReturnType = methodDecl.ReturnType.ToString(),
+                            Parameters = methodDecl.ParameterList.Parameters.Select(p => p.Identifier.Text)
+                                                   .ToList()
+                        });
+        }
+
+        return methods;
+    }
+
+    private static List<Event> GetEvents(TypeDeclarationSyntax typeDeclaration)
+    {
+        List<Event> events = new List<Event>();
+        foreach (EventFieldDeclarationSyntax eventDecl in typeDeclaration.Members.OfType<EventFieldDeclarationSyntax>())
+        {
+            List<string> parameterTypes = new List<string>();
+            if (eventDecl.Declaration.Type is GenericNameSyntax genericName)
+            {
+                parameterTypes.AddRange(genericName.TypeArgumentList.Arguments.Select(a => a.ToString()));
+            }
+
+            foreach (VariableDeclaratorSyntax variable in eventDecl.Declaration.Variables)
+            {
+                events.Add(new Event { Name = variable.Identifier.Text, ParameterTypes = parameterTypes });
+            }
+        }
+
+        return events;
+    }
+
+    private static List<Property> GetProperties(TypeDeclarationSyntax typeDeclaration)
+    {
+        List<Property> properties = new List<Property>();
+        foreach (PropertyDeclarationSyntax propDecl in typeDeclaration.Members.OfType<PropertyDeclarationSyntax>())
+        {
+            properties.Add(new Property { Name = propDecl.Identifier.Text, Type = propDecl.Type.ToString() });
+        }
+
+        return properties;
+    }
+
+    private static List<Field> GetFields(TypeDeclarationSyntax typeDeclaration)
+    {
+        List<Field> fields = new List<Field>();
+        foreach (FieldDeclarationSyntax fieldDeclaration in typeDeclaration.Members.OfType<FieldDeclarationSyntax>())
+        {
+            string type = fieldDeclaration.Declaration.Type.ToString();
+            foreach (VariableDeclaratorSyntax variable in fieldDeclaration.Declaration.Variables)
+            {
+                fields.Add(new Field { Name = variable.Identifier.Text, Type = type });
+            }
+        }
+
+        return fields;
+    }
+
     public static List<Interface> ExtractInterfaces(string[] files)
     {
         List<Interface> sortedDescending = new List<Interface>();
@@ -121,59 +146,21 @@ internal static class SyntaxExtractionFromFiles
                 SyntaxTree tree = CSharpSyntaxTree.ParseText(code);
                 CompilationUnitSyntax root = tree.GetCompilationUnitRoot();
 
-                IEnumerable<InterfaceDeclarationSyntax> classes = root.DescendantNodes()
+                IEnumerable<InterfaceDeclarationSyntax> interfaces = root.DescendantNodes()
                                                                       .OfType<InterfaceDeclarationSyntax>();
 
-                foreach (InterfaceDeclarationSyntax classDeclaration in classes)
+                foreach (InterfaceDeclarationSyntax interfaceDeclaration in interfaces)
                 {
-                    string className = classDeclaration.Identifier.Text;
-                    List<Field> fields = new List<Field>();
-                    List<Property> properties = new List<Property>();
-                    List<Event> events = new List<Event>();
-                    List<Method> methods = new List<Method>();
-
-                    foreach (FieldDeclarationSyntax fieldDecl in classDeclaration.Members.OfType<FieldDeclarationSyntax>())
-                    {
-                        string type = fieldDecl.Declaration.Type.ToString();
-                        foreach (VariableDeclaratorSyntax variable in fieldDecl.Declaration.Variables)
-                        {
-                            fields.Add(new Field { Name = variable.Identifier.Text, Type = type });
-                        }
-                    }
-
-                    foreach (PropertyDeclarationSyntax propDecl in classDeclaration.Members.OfType<PropertyDeclarationSyntax>())
-                    {
-                        properties.Add(new Property { Name = propDecl.Identifier.Text, Type = propDecl.Type.ToString() });
-                    }
-
-                    foreach (EventFieldDeclarationSyntax eventDecl in classDeclaration.Members.OfType<EventFieldDeclarationSyntax>())
-                    {
-                        List<string> parameterTypes = new List<string>();
-                        if (eventDecl.Declaration.Type is GenericNameSyntax genericName)
-                        {
-                            parameterTypes.AddRange(genericName.TypeArgumentList.Arguments.Select(a => a.ToString()));
-                        }
-
-                        foreach (VariableDeclaratorSyntax variable in eventDecl.Declaration.Variables)
-                        {
-                            events.Add(new Event { Name = variable.Identifier.Text, ParameterTypes = parameterTypes });
-                        }
-                    }
-
-                    foreach (MethodDeclarationSyntax methodDecl in classDeclaration.Members.OfType<MethodDeclarationSyntax>())
-                    {
-                        methods.Add(new Method
-                                    {
-                                        Name = methodDecl.Identifier.Text,
-                                        ReturnType = methodDecl.ReturnType.ToString(),
-                                        Parameters = methodDecl.ParameterList.Parameters.Select(p => p.Identifier.Text)
-                                                               .ToList()
-                                    });
-                    }
-
+                    string name = interfaceDeclaration.Identifier.Text;
+                    
+                    List<Field> fields = GetFields(interfaceDeclaration);
+                    List<Property> properties = GetProperties(interfaceDeclaration);
+                    List<Event> events = GetEvents(interfaceDeclaration);
+                    List<Method> methods = GetMethods(interfaceDeclaration);
+                    
                     sortedDescending.Add(new Interface
                                          {
-                                             Name = className,
+                                             Name = name,
                                              Fields = fields,
                                              Properties = properties,
                                              Events = events,
