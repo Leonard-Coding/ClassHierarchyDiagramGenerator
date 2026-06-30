@@ -69,9 +69,7 @@ internal static class Program
         StringBuilder s = new StringBuilder();
 
         s.AppendLine(TextBlocks.FileBeginFormat);
-
-        string bgcolor = "gray";
-        int transparency = 0;
+        
         int maximumheight = 0;
         int x = 0;
         int y = 0;
@@ -82,7 +80,7 @@ internal static class Program
 
         foreach (Class item in classes)
         {
-            transparency = InsertClass(classes, s, item, transparency, bgcolor, MaxItemsInRow, ref anzahlBlöcke, ref maximumheight, ref x, ref y, out int width, ref itemsInRow);
+            InsertClass(classes, s, item, ref anzahlBlöcke, ref maximumheight, ref x, ref y, out int width, ref itemsInRow);
             
             if (itemsInRow == MaxItemsInRow)
             {
@@ -103,12 +101,11 @@ internal static class Program
             y += LineSpace + maximumheight;
         }
         maximumheight = 0;
-        transparency = 0;
         itemsInRow = 0;
         
         foreach (Interface currentInterface in interfaces)
         {
-            transparency = InsertInterface(interfaces, s, currentInterface, transparency, bgcolor, MaxItemsInRow, ref anzahlBlöcke, ref maximumheight, ref x, ref y, out int width, ref itemsInRow);
+            InsertInterface(interfaces, s, currentInterface, ref anzahlBlöcke, ref maximumheight, ref x, ref y, out int width, ref itemsInRow);
             
             if (itemsInRow == MaxItemsInRow)
             {
@@ -130,12 +127,11 @@ internal static class Program
             y += LineSpace + maximumheight;
         }
         maximumheight = 0;
-        transparency = 0;
         itemsInRow = 0;
         
         foreach (Enum currentEnum in enums)
         {
-            transparency = InsertEnum(enums, s, currentEnum, transparency, bgcolor, MaxItemsInRow, ref anzahlBlöcke, ref maximumheight, ref x, ref y, out int width, ref itemsInRow);
+            InsertEnum(enums, s, currentEnum, ref anzahlBlöcke, ref maximumheight, ref x, ref y, out int width, ref itemsInRow);
             
             if (itemsInRow == MaxItemsInRow)
             {
@@ -303,12 +299,9 @@ internal static class Program
         return s.ToString();
     }
 
-    private static int InsertClass(List<Class> classes,
+    private static void InsertClass(List<Class> classes,
                                    StringBuilder s,
                                    Class currentClass,
-                                   int transparency,
-                                   string bgcolor,
-                                   int maxItemsInRow,
                                    ref int anzahlBlöcke,
                                    ref int maximumheight,
                                    ref int x,
@@ -417,10 +410,8 @@ internal static class Program
             lineCount++;
         }
         
-        s.AppendLine($"bg={bgcolor}");
-        s.AppendLine($"transparency={transparency}");
-        var stepsize = 100 / (classes.Count - 1);
-        transparency = transparency + stepsize;
+        //s.AppendLine($"bg={currentClass.LayoutData.BgColor}");
+        s.AppendLine("transparency=0");
         s.Append(TextBlocks.ClassEnd);
         anzahlBlöcke++;
             
@@ -452,27 +443,21 @@ internal static class Program
        
 
         s.Insert(classElementStartIndex, classHeader);
-
-        return transparency;
     }
     
-    private static int InsertInterface(List<Interface> interfaces,
-                                   StringBuilder s,
-                                   Interface currentInterface,
-                                   int transparency,
-                                   string bgcolor,
-                                   int maxItemsInRow,
-                                   ref int anzahlBlöcke,
-                                   ref int maximumheight,
-                                   ref int x,
-                                   ref int y,
-                                   out int width,
-                                   ref int itemsInRow)
+    private static void InsertInterface(List<Interface> interfaces,
+                                       StringBuilder s,
+                                       Interface currentInterface,
+                                       ref int anzahlBlöcke,
+                                       ref int maximumheight,
+                                       ref int x,
+                                       ref int y,
+                                       out int width,
+                                       ref int itemsInRow)
     {
         int longestLineCharacterCount = 0;
         int lineCount = 0;
         int strichlineCount = 0;
-        bgcolor = "red";
         currentInterface.LayoutData.X = x;
         currentInterface.LayoutData.Y = y;
         
@@ -573,10 +558,8 @@ internal static class Program
         }
         
         
-        s.AppendLine($"bg={bgcolor}");
-        s.AppendLine($"transparency={transparency}");
-        var stepSize = 100 / (interfaces.Count - 1);
-        transparency += stepSize;
+        //s.AppendLine($"bg={currentInterface.LayoutData.BgColor}");
+        s.AppendLine($"transparency=0");
         s.Append(TextBlocks.ClassEnd);
         anzahlBlöcke++;
             
@@ -604,16 +587,11 @@ internal static class Program
         string classHeader = string.Format(TextBlocks.ClassBeginFormat, x, y, width, height);
 
         s.Insert(classElementStartIndex, classHeader);
-        
-        return transparency;
     }
     
-    private static int InsertEnum(List<Enum> enums,
+    private static void InsertEnum(List<Enum> enums,
                                    StringBuilder s,
                                    Enum currentEnum,
-                                   int transparency,
-                                   string bgcolor,
-                                   int maxItemsInRow,
                                    ref int anzahlBlöcke,
                                    ref int maximumheight,
                                    ref int x,
@@ -624,7 +602,6 @@ internal static class Program
         int longestLineCharacterCount = 0;
         int lineCount = 0;
         int strichlineCount = 0;
-        bgcolor = "green";
         currentEnum.LayoutData.X = x;
         currentEnum.LayoutData.Y = y;
         
@@ -652,7 +629,8 @@ internal static class Program
         }
         
         
-        s.AppendLine($"bg={bgcolor}");
+        //s.AppendLine($"bg={currentEnum.LayoutData.BgColor}");
+        s.AppendLine("transparency=0");
         s.Append(TextBlocks.ClassEnd);
         anzahlBlöcke++;
             
@@ -682,8 +660,6 @@ internal static class Program
         itemsInRow++;
         
         s.Insert(classElementStartIndex, classHeader);
-        
-        return transparency;
     }
     private static void UpdateToLongest(ref int longestLineCharacterCount, string sanitizedClassName)
     {
