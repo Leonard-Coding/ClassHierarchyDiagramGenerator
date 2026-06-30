@@ -404,7 +404,7 @@ internal static class Program
             s.AppendLine(Sanitize(methodLine));
             lineCount++;
         }
-        
+
         s.AppendLine($"bg={currentClass.LayoutData.Color}");
         s.AppendLine("transparency=0");
         s.Append(TextBlocks.ClassEnd);

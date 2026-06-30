@@ -6,6 +6,8 @@ namespace ClassHierarchyDiagramGenerator;
 
 internal static class SyntaxExtractionFromFiles
 {
+    static string[] _endungen = { "Factory", "Provider", "Files" };
+    static string[] _endungenb = { "Utils", "Extensions", "block" };
     public static List<Class> ExtractClasses(string[] files)
     {
         List<Class> sortedDescending = new List<Class>();
@@ -31,16 +33,25 @@ internal static class SyntaxExtractionFromFiles
                     List<Method> methods = GetMethods(classDeclaration);
                     List<string> interfaces = GetInheritedTypes(classDeclaration, out string baseClass);
 
-                    sortedDescending.Add(new Class
-                                         {
-                                             Name = className,
-                                             Fields = fields,
-                                             Properties = properties,
-                                             Events = events,
-                                             Methods = methods,
-                                             BaseClass = baseClass,
-                                             Interfaces = interfaces
-                                         });
+                    var @class = new Class
+                                 {
+                                     Name = className,
+                                     Fields = fields,
+                                     Properties = properties,
+                                     Events = events,
+                                     Methods = methods,
+                                     BaseClass = baseClass,
+                                     Interfaces = interfaces
+                                 };
+                    if (_endungen.Any(endung => @class.Name.EndsWith(endung)))
+                    {
+                        @class.LayoutData.Color = "magenta";
+                    }
+                    else if (_endungenb.Any(endung => @class.Name.EndsWith(endung)))
+                    {
+                        @class.LayoutData.Color = "pink";
+                    }
+                    sortedDescending.Add(@class);
                 }
             }
             catch (Exception ex)
