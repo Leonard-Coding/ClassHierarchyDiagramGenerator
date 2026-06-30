@@ -518,15 +518,6 @@ internal static class Program
         
         
         s.AppendLine($"bg={bgcolor}");
-        s.AppendLine($"transparency={transparency}");
-
-        int stepSize = 100;
-        if (currentEnum.Members.Count > 1)
-        {
-            stepSize = 100 / (currentEnum.Members.Count - 1);
-        }
-        
-        transparency += stepSize;
         s.Append(TextBlocks.ClassEnd);
         anzahlBlöcke++;
             
