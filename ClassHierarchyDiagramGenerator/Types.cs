@@ -11,7 +11,7 @@ public sealed class Class
     public required List<Event> Events { get; init; }
     public required List<Method> Methods { get; init; }
 
-    public NodeLayoutData LayoutData { get; } = new();
+    public NodeLayoutData LayoutData { get; } = new() { Color = "gray" };
 
     public int MemberCount
     {
@@ -55,7 +55,7 @@ public sealed class Interface
     public required List<Event> Events { get; init; }
     public required List<Method> Methods { get; init; }
 
-    public NodeLayoutData LayoutData { get; } = new();
+    public NodeLayoutData LayoutData { get; } = new() { Color = "red" };
 
     public int MemberCount
     {
@@ -67,7 +67,7 @@ public sealed class Enum
 {
     public required string Name { get; init; }
     public required List<string> Members { get; init; }
-    public NodeLayoutData LayoutData { get; } = new();
+    public NodeLayoutData LayoutData { get; } = new() { Color = "green" };
 
     public int MemberCount
     {
@@ -82,4 +82,5 @@ public sealed class NodeLayoutData
 
     public int Height { get; set; }
     public int Width { get; set; }
+    public required string Color { get; set; }
 }

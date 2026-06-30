@@ -166,7 +166,6 @@ internal static class Program
                         int xzielgegeben = interfaceData.X;       //x
                         int widthzielgegeben = interfaceData.Width; //x
                         int yzielgegeben = interfaceData.Y;
-                        int heightzielgegeben = interfaceData.Height;
                         double xende = xzielgegeben + (widthzielgegeben / 2); //x
                         double yende = yzielgegeben;
                         double xveränderungpfeil = -(xpfeil - xende); //x
@@ -209,13 +208,11 @@ internal static class Program
                             double xgegeben = classData.X;    //x
                             double widthgegeben = classData.Width; //x
                             double ygegeben = classData.Y;
-                            double heightgegeben = classData.Height;
                             double xpfeil = xgegeben + (widthgegeben / 2); //x
                             double ypfeil = ygegeben;
                             int xzielgegeben = interfaceData.X;       //x
                             int widthzielgegeben = interfaceData.Width; //x
                             int yzielgegeben = interfaceData.Y;
-                            int heightzielgegeben = interfaceData.Height;
                             double xende = xzielgegeben + (widthzielgegeben / 2); //x
                             double yende = yzielgegeben;
                             double xveränderungpfeil = -(xpfeil - xende); //x
@@ -245,7 +242,6 @@ internal static class Program
         unterschied = 0;
         foreach (Interface item in interfaces)
         {
-            Console.WriteLine(item.Interfaces.Count);
             if (item.Interfaces.Count > 0)
             {
                 foreach (var interfacename in item.Interfaces)
@@ -267,7 +263,6 @@ internal static class Program
                             int xzielgegeben = interfaceData.X;       //x
                             int widthzielgegeben = interfaceData.Width; //x
                             int yzielgegeben = interfaceData.Y;
-                            int heightzielgegeben = interfaceData.Height;
                             double xende = xzielgegeben + (widthzielgegeben / 2); //x
                             double yende = yzielgegeben;
                             double xveränderungpfeil = -(xpfeil - xende); //x
@@ -410,7 +405,7 @@ internal static class Program
             lineCount++;
         }
         
-        //s.AppendLine($"bg={currentClass.LayoutData.BgColor}");
+        s.AppendLine($"bg={currentClass.LayoutData.Color}");
         s.AppendLine("transparency=0");
         s.Append(TextBlocks.ClassEnd);
         anzahlBlöcke++;
@@ -558,7 +553,7 @@ internal static class Program
         }
         
         
-        //s.AppendLine($"bg={currentInterface.LayoutData.BgColor}");
+        s.AppendLine($"bg={currentInterface.LayoutData.Color}");
         s.AppendLine($"transparency=0");
         s.Append(TextBlocks.ClassEnd);
         anzahlBlöcke++;
@@ -629,7 +624,7 @@ internal static class Program
         }
         
         
-        //s.AppendLine($"bg={currentEnum.LayoutData.BgColor}");
+        s.AppendLine($"bg={currentEnum.LayoutData.Color}");
         s.AppendLine("transparency=0");
         s.Append(TextBlocks.ClassEnd);
         anzahlBlöcke++;
