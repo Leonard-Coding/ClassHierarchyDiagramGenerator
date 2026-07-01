@@ -6,8 +6,8 @@ namespace ClassHierarchyDiagramGenerator;
 
 internal static class SyntaxExtractionFromFiles
 {
-    static string[] _endungen = { "Factory", "Provider", "Files" };
-    static string[] _endungenb = { "Utils", "Extensions", "block" };
+    static string[] _endungen = { "Factory", "Provider"};
+    static string[] _endungenb = { "Utils", "Extensions"};
     public static List<Class> ExtractClasses(string[] files)
     {
         List<Class> sortedDescending = new List<Class>();

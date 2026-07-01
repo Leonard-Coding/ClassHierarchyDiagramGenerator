@@ -5,6 +5,7 @@ namespace ClassHierarchyDiagramGenerator;
 
 internal static class Program
 {
+    private const int ClassSpace = 100;
     private const int LineSpace = 50;
     private const int ItemSpace = 10;
 
@@ -62,6 +63,7 @@ internal static class Program
         int y = 0;
         int itemsInRow = 0;
         int blockCount = 0;
+        int arrowCount = 0;
         const int maxItemsInRow = -1;
         
         foreach (Class item in classes)
@@ -81,6 +83,7 @@ internal static class Program
             }
         }
         
+        y += ClassSpace - LineSpace;
         x = 0;
         if (itemsInRow != 0)
         {
@@ -91,7 +94,7 @@ internal static class Program
         
         foreach (Interface currentInterface in interfaces)
         {
-            InsertInterface(interfaces, s, currentInterface, ref blockCount, ref maxHeight, ref x, ref y, out double width);
+            InsertInterface(interfaces, s, currentInterface, ref blockCount, ref maxHeight, ref x, ref y, out double width, ref itemsInRow);
             
             if (itemsInRow == maxItemsInRow)
             {
@@ -105,8 +108,8 @@ internal static class Program
                 x += (int)width + ItemSpace;
             }
         }
-        
-        y += LineSpace + maxHeight;
+
+        y += ClassSpace - LineSpace;
         x = 0;
         if (itemsInRow != 0)
         {
@@ -149,7 +152,7 @@ internal static class Program
                         var heightClass = classData.Height;
                         var xArrowClass = xClass + (widthClass / 2);
                         var yArrowClass = yClass + heightClass;
-                        int xInterface = interfaceData.X;
+                        var xInterface = interfaceData.X;
                         var widthInterface = interfaceData.Width;
                         var yInterface = interfaceData.Y;
                         var xArrowInterface = xInterface + (widthInterface / 2);
@@ -166,6 +169,7 @@ internal static class Program
                         s.AppendLine($"    <panel_attributes>{arrowType}</panel_attributes>");
                         s.AppendLine($"    <additional_attributes>{xDifference}.0;{yDifference}.0;0.0;0.0</additional_attributes>"); 
                         s.AppendLine("   </element>");
+                        arrowCount++;
                     }
                 }
             }
@@ -208,6 +212,7 @@ internal static class Program
                             s.AppendLine($"    <additional_attributes>0.0;{-yDifference+heightDifference};0.0;0.0;{xDifference};0.0;{xDifference};{heightDifference}</additional_attributes>"); 
                             s.AppendLine("   </element>");
                             heightDifference += 10;
+                            arrowCount++;
                         }
                     }
                 }
@@ -250,8 +255,9 @@ internal static class Program
                             s.AppendLine("    </coordinates>");
                             s.AppendLine($"    <panel_attributes>{arrowType}</panel_attributes>");
                             s.AppendLine($"    <additional_attributes>0.0;{-yDifference+heightDifferenceInterfaces};0.0;0.0;{xDifference};0.0;{xDifference};{heightDifferenceInterfaces}</additional_attributes>");
-                            s.AppendLine("   </element>"); //fest
+                            s.AppendLine("   </element>");
                             heightDifferenceInterfaces += 10;
+                            arrowCount++;
                         }
                     }
                 }
@@ -259,7 +265,7 @@ internal static class Program
         }
         
         s.AppendLine(TextBlocks.FileEnd);
-        Console.WriteLine($"Your Document finished generating and includes {blockCount} blocks");
+        Console.WriteLine($"Your document finished generating and includes {blockCount} blocks and {arrowCount} connections.");
         return s.ToString();
     }
 
@@ -412,7 +418,8 @@ internal static class Program
                                        ref int maxHeight,
                                        ref int x,
                                        ref int y,
-                                       out double width)
+                                       out double width,
+                                       ref int itemsInRow)
     {
         int longestLineCharacterCount = 0;
         int lineCount = 0;
@@ -521,8 +528,7 @@ internal static class Program
         s.AppendLine($"transparency=0");
         s.Append(TextBlocks.ClassEnd);
         blockCount++;
-            
-        // now we know how wide the class element should become
+        
         static double CeilToMultiple(double value, double multiple)
         {
             if (multiple == 0)
@@ -545,6 +551,8 @@ internal static class Program
         string classHeader = string.Format(TextBlocks.ClassBeginFormat, x, y, width, height);
 
         s.Insert(classElementStartIndex, classHeader);
+        
+        itemsInRow++;
     }
     
     private static void InsertEnum(List<Enum> enums,
@@ -591,8 +599,7 @@ internal static class Program
         s.AppendLine("transparency=0");
         s.Append(TextBlocks.ClassEnd);
         blockCount++;
-            
-        // now we know how wide the class element should become
+        
         static double CeilToMultiple(double value, double multiple)
         {
             if (multiple == 0)
