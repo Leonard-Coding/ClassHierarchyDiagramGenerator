@@ -40,7 +40,10 @@ internal static class Program
                                                              .OrderByDescending(e => e.MemberCount)
                                                              .ToList();
 
-        string fileContent = DiagramGeneration.GenerateDiagramFileContent(collectedClasses, collectedInterfaces, collectedEnums);
+        var  result = DiagramGeneration.GenerateDiagramFileContent(collectedClasses, collectedInterfaces, collectedEnums);
+        
+        
+        var fileContent = result.DiagramFileContent;
 
         try
         {
@@ -50,5 +53,7 @@ internal static class Program
         {
             Console.WriteLine(e);
         }
+        
+        Console.WriteLine($"Your document finished generating and includes {result.BlockCount} blocks and {result.ArrowCount} connections.");
     }
 }

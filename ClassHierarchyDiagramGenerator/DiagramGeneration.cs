@@ -9,11 +9,18 @@ internal static class DiagramGeneration
     private const int LineSpace = 50;
     private const int ItemSpace = 10;
 
-    public static string GenerateDiagramFileContent(List<Class> classes, List<Interface> interfaces, List<Enum> enums)
+    public class GenerationResult
     {
-        StringBuilder s = new StringBuilder();
+        public required string DiagramFileContent { get; init; }
+        public required int BlockCount { get; init; }
+        public required int ArrowCount { get; init; }
+    }
+    
+    public static GenerationResult GenerateDiagramFileContent(List<Class> classes, List<Interface> interfaces, List<Enum> enums)
+    {
+        StringBuilder stringBuilder = new StringBuilder();
 
-        s.AppendLine(TextBlocks.FileBeginFormat);
+        stringBuilder.AppendLine(TextBlocks.FileBeginFormat);
 
         int maxHeight = 0;
         int x = 0;
@@ -25,7 +32,7 @@ internal static class DiagramGeneration
 
         foreach (Class item in classes)
         {
-            InsertClass(s, item, ref blockCount, ref maxHeight, ref x, ref y, out double width, ref itemsInRow);
+            InsertClass(stringBuilder, item, ref blockCount, ref maxHeight, ref x, ref y, out double width, ref itemsInRow);
 
             if (itemsInRow == maxItemsInRow)
             {
@@ -50,9 +57,9 @@ internal static class DiagramGeneration
         maxHeight = 0;
         itemsInRow = 0;
 
-        foreach (Interface currentInterface in interfaces)
+        foreach (Interface item in interfaces)
         {
-            InsertInterface(s, currentInterface, ref blockCount, ref maxHeight, ref x, ref y, out double width, ref itemsInRow);
+            InsertInterface(stringBuilder, item, ref blockCount, ref maxHeight, ref x, ref y, out double width, ref itemsInRow);
 
             if (itemsInRow == maxItemsInRow)
             {
@@ -77,9 +84,9 @@ internal static class DiagramGeneration
         maxHeight = 0;
         itemsInRow = 0;
 
-        foreach (Enum currentEnum in enums)
+        foreach (Enum item in enums)
         {
-            InsertEnum(s, currentEnum, ref blockCount, ref maxHeight, ref x, ref y, out double width, ref itemsInRow);
+            InsertEnum(stringBuilder, item, ref blockCount, ref maxHeight, ref x, ref y, out double width, ref itemsInRow);
 
             if (itemsInRow == maxItemsInRow)
             {
@@ -118,18 +125,18 @@ internal static class DiagramGeneration
                         var xArrowInterface = xInterface + widthInterface / 2;
                         var xDifference = -(xArrowClass - xArrowInterface);
                         var yDifference = -(yArrowClass - yInterface);
-                        s.AppendLine("  <element>");
-                        s.AppendLine("    <id>Relation</id>");
-                        s.AppendLine("    <coordinates>");
-                        s.AppendLine($"     <x>{xArrowClass}</x>");
-                        s.AppendLine($"     <y>{yArrowClass}</y>");
-                        s.AppendLine("     <w>0</w>");
-                        s.AppendLine("     <h>0</h>");
-                        s.AppendLine("    </coordinates>");
-                        s.AppendLine($"    <panel_attributes>{arrowType}");
-                        s.AppendLine($"{layer}</panel_attributes>");
-                        s.AppendLine($"    <additional_attributes>{xDifference}.0;{yDifference}.0;0.0;0.0</additional_attributes>");
-                        s.AppendLine("   </element>");
+                        stringBuilder.AppendLine("  <element>");
+                        stringBuilder.AppendLine("    <id>Relation</id>");
+                        stringBuilder.AppendLine("    <coordinates>");
+                        stringBuilder.AppendLine($"     <x>{xArrowClass}</x>");
+                        stringBuilder.AppendLine($"     <y>{yArrowClass}</y>");
+                        stringBuilder.AppendLine("     <w>0</w>");
+                        stringBuilder.AppendLine("     <h>0</h>");
+                        stringBuilder.AppendLine("    </coordinates>");
+                        stringBuilder.AppendLine($"    <panel_attributes>{arrowType}");
+                        stringBuilder.AppendLine($"{layer}</panel_attributes>");
+                        stringBuilder.AppendLine($"    <additional_attributes>{xDifference}.0;{yDifference}.0;0.0;0.0</additional_attributes>");
+                        stringBuilder.AppendLine("   </element>");
                         arrowCount++;
                     }
                 }
@@ -162,18 +169,18 @@ internal static class DiagramGeneration
                             var xArrowInterfaceData = xInterfaceData + widthInterfaceData / 2;
                             var xDifference = -(xArrowClass - xArrowInterfaceData);
                             var yDifference = -(yClass - yInterfaceData);
-                            s.AppendLine("  <element>");
-                            s.AppendLine("    <id>Relation</id>");
-                            s.AppendLine("    <coordinates>");
-                            s.AppendLine($"     <x>{xArrowClass}</x>");
-                            s.AppendLine($"     <y>{yClass - heightDifference + yDifference}</y>");
-                            s.AppendLine("     <w>0</w>");
-                            s.AppendLine("     <h>0</h>");
-                            s.AppendLine("    </coordinates>");
-                            s.AppendLine($"    <panel_attributes>{arrowType}");
-                            s.AppendLine($"{layer}</panel_attributes>");
-                            s.AppendLine($"    <additional_attributes>0.0;{-yDifference + heightDifference};0.0;0.0;{xDifference};0.0;{xDifference};{heightDifference}</additional_attributes>");
-                            s.AppendLine("   </element>");
+                            stringBuilder.AppendLine("  <element>");
+                            stringBuilder.AppendLine("    <id>Relation</id>");
+                            stringBuilder.AppendLine("    <coordinates>");
+                            stringBuilder.AppendLine($"     <x>{xArrowClass}</x>");
+                            stringBuilder.AppendLine($"     <y>{yClass - heightDifference + yDifference}</y>");
+                            stringBuilder.AppendLine("     <w>0</w>");
+                            stringBuilder.AppendLine("     <h>0</h>");
+                            stringBuilder.AppendLine("    </coordinates>");
+                            stringBuilder.AppendLine($"    <panel_attributes>{arrowType}");
+                            stringBuilder.AppendLine($"{layer}</panel_attributes>");
+                            stringBuilder.AppendLine($"    <additional_attributes>0.0;{-yDifference + heightDifference};0.0;0.0;{xDifference};0.0;{xDifference};{heightDifference}</additional_attributes>");
+                            stringBuilder.AppendLine("   </element>");
                             heightDifference += 10;
                             arrowCount++;
                         }
@@ -209,18 +216,18 @@ internal static class DiagramGeneration
                             var xArrowInterface = xInterface + widthInterface / 2;
                             var xDifference = -(xArrowInterface2 - xArrowInterface);
                             var yDifference = -(yInterface2 - yInterface);
-                            s.AppendLine("  <element>");
-                            s.AppendLine("    <id>Relation</id>");
-                            s.AppendLine("    <coordinates>");
-                            s.AppendLine($"     <x>{xArrowInterface2}</x>");
-                            s.AppendLine($"     <y>{yInterface2 + heightInterface2 - heightDifferenceInterfaces}</y>");
-                            s.AppendLine("     <w>0</w>");
-                            s.AppendLine("     <h>0</h>");
-                            s.AppendLine("    </coordinates>");
-                            s.AppendLine($"    <panel_attributes>{arrowType}");
-                            s.AppendLine($"{layer}</panel_attributes>");
-                            s.AppendLine($"    <additional_attributes>0.0;{-yDifference + heightDifferenceInterfaces};0.0;0.0;{xDifference};0.0;{xDifference};{heightDifferenceInterfaces}</additional_attributes>");
-                            s.AppendLine("   </element>");
+                            stringBuilder.AppendLine("  <element>");
+                            stringBuilder.AppendLine("    <id>Relation</id>");
+                            stringBuilder.AppendLine("    <coordinates>");
+                            stringBuilder.AppendLine($"     <x>{xArrowInterface2}</x>");
+                            stringBuilder.AppendLine($"     <y>{yInterface2 + heightInterface2 - heightDifferenceInterfaces}</y>");
+                            stringBuilder.AppendLine("     <w>0</w>");
+                            stringBuilder.AppendLine("     <h>0</h>");
+                            stringBuilder.AppendLine("    </coordinates>");
+                            stringBuilder.AppendLine($"    <panel_attributes>{arrowType}");
+                            stringBuilder.AppendLine($"{layer}</panel_attributes>");
+                            stringBuilder.AppendLine($"    <additional_attributes>0.0;{-yDifference + heightDifferenceInterfaces};0.0;0.0;{xDifference};0.0;{xDifference};{heightDifferenceInterfaces}</additional_attributes>");
+                            stringBuilder.AppendLine("   </element>");
                             heightDifferenceInterfaces += 10;
                             arrowCount++;
                         }
@@ -229,9 +236,9 @@ internal static class DiagramGeneration
             }
         }
 
-        s.AppendLine(TextBlocks.FileEnd);
-        Console.WriteLine($"Your document finished generating and includes {blockCount} blocks and {arrowCount} connections.");
-        return s.ToString();
+        stringBuilder.AppendLine(TextBlocks.FileEnd);
+
+        return new GenerationResult() { ArrowCount = arrowCount, BlockCount = blockCount, DiagramFileContent = stringBuilder.ToString() };
     }
 
     private static void InsertClass(StringBuilder s,
