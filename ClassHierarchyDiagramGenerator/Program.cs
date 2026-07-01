@@ -51,7 +51,6 @@ internal static class Program
         }
     }
     
-    
     private static string GenerateDiagramFileContent(List<Class> classes, List<Interface> interfaces, List<Enum> enums)
     {
         StringBuilder s = new StringBuilder();
@@ -359,7 +358,6 @@ internal static class Program
                 s.AppendLine(Sanitize(eventLine));
                 lineCount++;
             }
-                
         }
 
         if (currentClass.Methods.Count > 0)
@@ -403,8 +401,6 @@ internal static class Program
         string classHeader = string.Format(TextBlocks.ClassBeginFormat, x, y, width, height);
 
         itemsInRow++;
-
-       
 
         s.Insert(classElementStartIndex, classHeader);
     }
@@ -453,8 +449,7 @@ internal static class Program
 
         if (currentInterface.Properties.Count > 0)
         {
-            int maxPropertyTypeLength = currentInterface.Properties.Max(p => p.Type
-                                                                  .Length);
+            int maxPropertyTypeLength = currentInterface.Properties.Max(p => p.Type.Length);
                 
             s.AppendLine("--");
             lineCount++;
@@ -495,7 +490,6 @@ internal static class Program
                 s.AppendLine(Sanitize(eventLine));
                 lineCount++;
             }
-                
         }
 
         if (currentInterface.Methods.Count > 0)
@@ -520,7 +514,6 @@ internal static class Program
             s.AppendLine(Sanitize(methodLine));
             lineCount++;
         }
-        
         
         s.AppendLine($"bg={currentInterface.LayoutData.Color}");
         s.AppendLine($"transparency=0");
@@ -583,7 +576,6 @@ internal static class Program
                 lineCount++;
             }
         }
-        
         
         s.AppendLine($"bg={currentEnum.LayoutData.Color}");
         s.AppendLine("transparency=0");
