@@ -68,7 +68,7 @@ internal static class Program
         
         foreach (Class item in classes)
         {
-            InsertClass(classes, s, item, ref blockCount, ref maxHeight, ref x, ref y, out double width, ref itemsInRow);
+            InsertClass(s, item, ref blockCount, ref maxHeight, ref x, ref y, out double width, ref itemsInRow);
             
             if (itemsInRow == maxItemsInRow)
             {
@@ -94,7 +94,7 @@ internal static class Program
         
         foreach (Interface currentInterface in interfaces)
         {
-            InsertInterface(interfaces, s, currentInterface, ref blockCount, ref maxHeight, ref x, ref y, out double width, ref itemsInRow);
+            InsertInterface(s, currentInterface, ref blockCount, ref maxHeight, ref x, ref y, out double width, ref itemsInRow);
             
             if (itemsInRow == maxItemsInRow)
             {
@@ -120,7 +120,7 @@ internal static class Program
         
         foreach (Enum currentEnum in enums)
         {
-            InsertEnum(enums, s, currentEnum, ref blockCount, ref maxHeight, ref x, ref y, out double width, ref itemsInRow);
+            InsertEnum(s, currentEnum, ref blockCount, ref maxHeight, ref x, ref y, out double width, ref itemsInRow);
             
             if (itemsInRow == maxItemsInRow)
             {
@@ -275,15 +275,14 @@ internal static class Program
         return s.ToString();
     }
 
-    private static void InsertClass(List<Class> classes,
-                                   StringBuilder s,
-                                   Class currentClass,
-                                   ref int blockCount,
-                                   ref int maxHeight,
-                                   ref int x,
-                                   ref int y,
-                                   out double width,
-                                   ref int itemsInRow)
+    private static void InsertClass(StringBuilder s,
+                                    Class currentClass,
+                                    ref int blockCount,
+                                    ref int maxHeight,
+                                    ref int x,
+                                    ref int y,
+                                    out double width,
+                                    ref int itemsInRow)
     {
         int longestLineCharacterCount = 0;
         int lineCount = 0;
@@ -390,9 +389,9 @@ internal static class Program
         s.Append(TextBlocks.ClassEnd);
         blockCount++;
         
-        width = CeilToMultiple(longestLineCharacterCount * 8.5 + 10, 10);
+        width = RoundUpToMultiple(longestLineCharacterCount * 8.5 + 10, 10);
         currentClass.LayoutData.Width = (int)width;
-        double height = CeilToMultiple((lineCount - divideLineCount) * 13 + divideLineCount * 8 + 20, 10);
+        double height = RoundUpToMultiple((lineCount - divideLineCount) * 13 + divideLineCount * 8 + 20, 10);
         currentClass.LayoutData.Height = (int)height;
         
         if (height >= maxHeight)
@@ -409,15 +408,14 @@ internal static class Program
         s.Insert(classElementStartIndex, classHeader);
     }
     
-    private static void InsertInterface(List<Interface> interfaces,
-                                       StringBuilder s,
-                                       Interface currentInterface,
-                                       ref int blockCount,
-                                       ref int maxHeight,
-                                       ref int x,
-                                       ref int y,
-                                       out double width,
-                                       ref int itemsInRow)
+    private static void InsertInterface(StringBuilder s,
+                                        Interface currentInterface,
+                                        ref int blockCount,
+                                        ref int maxHeight,
+                                        ref int x,
+                                        ref int y,
+                                        out double width,
+                                        ref int itemsInRow)
     {
         int longestLineCharacterCount = 0;
         int lineCount = 0;
@@ -527,10 +525,10 @@ internal static class Program
         s.Append(TextBlocks.ClassEnd);
         blockCount++;
 
-        width = CeilToMultiple(longestLineCharacterCount * 8.5 + 10, 10);
+        width = RoundUpToMultiple(longestLineCharacterCount * 8.5 + 10, 10);
         currentInterface.LayoutData.Width = (int)width;
         
-        double height = CeilToMultiple((lineCount - divideLineCount) * 13 + divideLineCount * 8 + 20, 10);
+        double height = RoundUpToMultiple((lineCount - divideLineCount) * 13 + divideLineCount * 8 + 20, 10);
         currentInterface.LayoutData.Height = (int)height;
         
         if (height >= maxHeight)
@@ -545,8 +543,7 @@ internal static class Program
         itemsInRow++;
     }
     
-    private static void InsertEnum(List<Enum> enums,
-                                   StringBuilder s,
+    private static void InsertEnum(StringBuilder s,
                                    Enum currentEnum,
                                    ref int blockCount,
                                    ref int maxHeight,
@@ -590,10 +587,10 @@ internal static class Program
         s.Append(TextBlocks.ClassEnd);
         blockCount++;
         
-        width = CeilToMultiple(longestLineCharacterCount * 8.5 + 10, 10);
+        width = RoundUpToMultiple(longestLineCharacterCount * 8.5 + 10, 10);
         currentEnum.LayoutData.Width = (int)width;
         
-        double height = CeilToMultiple((lineCount - divideLineCount) * 13 + divideLineCount * 8 + 20, 10);
+        double height = RoundUpToMultiple((lineCount - divideLineCount) * 13 + divideLineCount * 8 + 20, 10);
         currentEnum.LayoutData.Height = (int)height;
         
         if (height >= maxHeight)

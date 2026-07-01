@@ -11,7 +11,7 @@ public static class Utils
                    .Replace(">", "&gt;");
     }
     
-    public static double CeilToMultiple(double value, double multiple)
+    public static double RoundUpToMultiple(double value, double multiple)
     {
         if (multiple == 0)
             throw new ArgumentException("Multiple darf nicht 0 sein.");
