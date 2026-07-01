@@ -390,14 +390,6 @@ internal static class Program
         s.Append(TextBlocks.ClassEnd);
         blockCount++;
         
-        static double CeilToMultiple(double value, double multiple)
-        {
-            if (multiple == 0)
-                throw new ArgumentException("Multiple darf nicht 0 sein.");
-
-            return Math.Ceiling(value / multiple) * multiple;
-        }
-
         width = CeilToMultiple(longestLineCharacterCount * 8.5 + 10, 10);
         currentClass.LayoutData.Width = (int)width;
         double height = CeilToMultiple((lineCount - divideLineCount) * 13 + divideLineCount * 8 + 20, 10);
@@ -534,14 +526,6 @@ internal static class Program
         s.AppendLine($"transparency=0");
         s.Append(TextBlocks.ClassEnd);
         blockCount++;
-        
-        static double CeilToMultiple(double value, double multiple)
-        {
-            if (multiple == 0)
-                throw new ArgumentException("Multiple darf nicht 0 sein.");
-
-            return Math.Ceiling(value / multiple) * multiple;
-        }
 
         width = CeilToMultiple(longestLineCharacterCount * 8.5 + 10, 10);
         currentInterface.LayoutData.Width = (int)width;
@@ -606,14 +590,6 @@ internal static class Program
         s.Append(TextBlocks.ClassEnd);
         blockCount++;
         
-        static double CeilToMultiple(double value, double multiple)
-        {
-            if (multiple == 0)
-                throw new ArgumentException("Multiple darf nicht 0 sein.");
-
-            return Math.Ceiling(value / multiple) * multiple;
-        }
-
         width = CeilToMultiple(longestLineCharacterCount * 8.5 + 10, 10);
         currentEnum.LayoutData.Width = (int)width;
         
