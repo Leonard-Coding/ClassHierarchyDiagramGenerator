@@ -190,12 +190,12 @@ internal static class Program
                             var widthClass = classData.Width;
                             var yClass = classData.Y;
                             var xArrowClass = xClass + (widthClass / 2);
-                            var xInterface = interfaceData.X; 
-                            var widthInterface = interfaceData.Width;
-                            var yInterface = interfaceData.Y;
-                            var xArrowInterface = xInterface + (widthInterface / 2);
-                            var xDifference = -(xArrowClass - xArrowInterface);
-                            var yDifference = -(yClass - yInterface);
+                            var xInterfaceData = interfaceData.X; 
+                            var widthInterfaceData = interfaceData.Width;
+                            var yInterfaceData = interfaceData.Y;
+                            var xArrowInterfaceData = xInterfaceData + (widthInterfaceData / 2);
+                            var xDifference = -(xArrowClass - xArrowInterfaceData);
+                            var yDifference = -(yClass - yInterfaceData);
                             s.AppendLine("  <element>");
                             s.AppendLine("    <id>Relation</id>");
                             s.AppendLine("    <coordinates>");
@@ -416,7 +416,7 @@ internal static class Program
     {
         int longestLineCharacterCount = 0;
         int lineCount = 0;
-        int strichlineCount = 0;
+        int divideLineCount = 0;
         currentInterface.LayoutData.X = x;
         currentInterface.LayoutData.Y = y;
         
@@ -434,7 +434,7 @@ internal static class Program
                 
             s.AppendLine("--");
             lineCount++;
-            strichlineCount++;
+            divideLineCount++;
                 
             foreach (Field field in currentInterface.Fields)
             {
@@ -453,7 +453,7 @@ internal static class Program
                 
             s.AppendLine("--");
             lineCount++;
-            strichlineCount++;
+            divideLineCount++;
                 
             foreach (Property prop in currentInterface.Properties)
             {
@@ -471,7 +471,7 @@ internal static class Program
         {
             s.AppendLine("--");
             lineCount++;
-            strichlineCount++;
+            divideLineCount++;
         }
 
         if (currentInterface.Events.Count > 0)
@@ -497,7 +497,7 @@ internal static class Program
         {
             s.AppendLine("--");
             lineCount++;
-            strichlineCount++;
+            divideLineCount++;
         }
 
         foreach (Method method in currentInterface.Methods)
@@ -534,7 +534,7 @@ internal static class Program
         width = CeilToMultiple(longestLineCharacterCount * 8.5 + 10, 10);
         currentInterface.LayoutData.Width = (int)width;
         
-        double height = CeilToMultiple((lineCount - strichlineCount) * 13 + strichlineCount * 8 + 20, 10);
+        double height = CeilToMultiple((lineCount - divideLineCount) * 13 + divideLineCount * 8 + 20, 10);
         currentInterface.LayoutData.Height = (int)height;
         
         if (height >= maxHeight)
@@ -559,7 +559,7 @@ internal static class Program
     {
         int longestLineCharacterCount = 0;
         int lineCount = 0;
-        int strichlineCount = 0;
+        int divideLineCount = 0;
         currentEnum.LayoutData.X = x;
         currentEnum.LayoutData.Y = y;
         
@@ -575,7 +575,7 @@ internal static class Program
         {
             s.AppendLine("--");
             lineCount++;
-            strichlineCount++;
+            divideLineCount++;
                 
             foreach (string members in currentEnum.Members)
             {
@@ -604,7 +604,7 @@ internal static class Program
         width = CeilToMultiple(longestLineCharacterCount * 8.5 + 10, 10);
         currentEnum.LayoutData.Width = (int)width;
         
-        double height = CeilToMultiple((lineCount - strichlineCount) * 13 + strichlineCount * 8 + 20, 10);
+        double height = CeilToMultiple((lineCount - divideLineCount) * 13 + divideLineCount * 8 + 20, 10);
         currentEnum.LayoutData.Height = (int)height;
         
         if (height >= maxHeight)
