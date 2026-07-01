@@ -144,6 +144,7 @@ internal static class Program
                     if (interfaceName == @interface.Name)
                     {
                         const string arrowType = "lt=&lt;&lt;-";
+                        const string layer = "layer=0";
                         var classData = item.LayoutData;
                         var interfaceData = @interface.LayoutData;
                         var xClass = classData.X;
@@ -166,7 +167,8 @@ internal static class Program
                         s.AppendLine("     <w>0</w>");
                         s.AppendLine("     <h>0</h>");
                         s.AppendLine("    </coordinates>");
-                        s.AppendLine($"    <panel_attributes>{arrowType}</panel_attributes>");
+                        s.AppendLine($"    <panel_attributes>{arrowType}");
+                        s.AppendLine($"{layer}</panel_attributes>");
                         s.AppendLine($"    <additional_attributes>{xDifference}.0;{yDifference}.0;0.0;0.0</additional_attributes>"); 
                         s.AppendLine("   </element>");
                         arrowCount++;
@@ -188,6 +190,7 @@ internal static class Program
                         {    
                             heightDifference += 20;    
                             const string arrowType = "lt=-&gt;&gt;";
+                            const string layer = "layer=0";
                             var classData = item.LayoutData;
                             var interfaceData = @class.LayoutData;
                             var xClass = classData.X;
@@ -208,7 +211,8 @@ internal static class Program
                             s.AppendLine("     <w>0</w>");
                             s.AppendLine("     <h>0</h>");
                             s.AppendLine("    </coordinates>");
-                            s.AppendLine($"    <panel_attributes>{arrowType}</panel_attributes>");
+                            s.AppendLine($"    <panel_attributes>{arrowType}");
+                            s.AppendLine($"{layer}</panel_attributes>");
                             s.AppendLine($"    <additional_attributes>0.0;{-yDifference+heightDifference};0.0;0.0;{xDifference};0.0;{xDifference};{heightDifference}</additional_attributes>"); 
                             s.AppendLine("   </element>");
                             heightDifference += 10;
@@ -232,6 +236,7 @@ internal static class Program
                         {    
                             heightDifferenceInterfaces -= 20;    
                             const string arrowType = "lt=-&gt;&gt;";
+                            const string layer = "layer=0";
                             var classData = item.LayoutData;
                             var interfaceData = names.LayoutData;
                             var xInterface2 = classData.X;
@@ -253,7 +258,8 @@ internal static class Program
                             s.AppendLine("     <w>0</w>");
                             s.AppendLine("     <h>0</h>");
                             s.AppendLine("    </coordinates>");
-                            s.AppendLine($"    <panel_attributes>{arrowType}</panel_attributes>");
+                            s.AppendLine($"    <panel_attributes>{arrowType}");
+                            s.AppendLine($"{layer}</panel_attributes>");
                             s.AppendLine($"    <additional_attributes>0.0;{-yDifference+heightDifferenceInterfaces};0.0;0.0;{xDifference};0.0;{xDifference};{heightDifferenceInterfaces}</additional_attributes>");
                             s.AppendLine("   </element>");
                             heightDifferenceInterfaces += 10;
