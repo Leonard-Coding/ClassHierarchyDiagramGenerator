@@ -8,14 +8,8 @@ internal static class DiagramGeneration
     private const int ClassSpace = 100;
     private const int LineSpace = 50;
     private const int ItemSpace = 10;
+    private const int MaxItemsInRow = -1; // indicates unlimited block counts per row
 
-    public class GenerationResult
-    {
-        public required string DiagramFileContent { get; init; }
-        public required int BlockCount { get; init; }
-        public required int ArrowCount { get; init; }
-    }
-    
     public static GenerationResult GenerateDiagramFileContent(List<Class> classes, List<Interface> interfaces, List<Enum> enums)
     {
         StringBuilder stringBuilder = new StringBuilder();
@@ -23,82 +17,32 @@ internal static class DiagramGeneration
         stringBuilder.AppendLine(TextBlocks.FileBeginFormat);
 
         int maxHeight = 0;
-        int x = 0;
-        int y = 0;
+        int currentX = 0;
+        int currentY = 0;
         int itemsInRow = 0;
         int blockCount = 0;
         int arrowCount = 0;
-        const int maxItemsInRow = -1;
 
         foreach (Class item in classes)
         {
-            InsertClass(stringBuilder, item, ref blockCount, ref maxHeight, ref x, ref y, out double width, ref itemsInRow);
-
-            if (itemsInRow == maxItemsInRow)
-            {
-                x = 0;
-                y += LineSpace + maxHeight;
-                itemsInRow = 0;
-                maxHeight = 0;
-            }
-            else
-            {
-                x += (int) width + ItemSpace;
-            }
+            InsertClass(stringBuilder, item, ref blockCount, ref maxHeight, ref itemsInRow, ref currentX, ref currentY, out double width);
+            InsertBlockLineBreakOrMoveHorizontally(width, ref currentX, ref currentY, ref maxHeight, ref itemsInRow);
         }
 
-        y += ClassSpace - LineSpace;
-        x = 0;
-        if (itemsInRow != 0)
-        {
-            y += LineSpace + maxHeight;
-        }
-
-        maxHeight = 0;
-        itemsInRow = 0;
+        AddBlockLineBreakAfterBlockType(ref currentX, ref currentY, ref itemsInRow, ref maxHeight);
 
         foreach (Interface item in interfaces)
         {
-            InsertInterface(stringBuilder, item, ref blockCount, ref maxHeight, ref x, ref y, out double width, ref itemsInRow);
-
-            if (itemsInRow == maxItemsInRow)
-            {
-                x = 0;
-                y += LineSpace + maxHeight;
-                itemsInRow = 0;
-                maxHeight = 0;
-            }
-            else
-            {
-                x += (int) width + ItemSpace;
-            }
+            InsertInterface(stringBuilder, item, ref blockCount, ref maxHeight, ref itemsInRow, ref currentX, ref currentY, out double width);
+            InsertBlockLineBreakOrMoveHorizontally(width, ref currentX, ref currentY, ref maxHeight, ref itemsInRow);
         }
 
-        y += ClassSpace - LineSpace;
-        x = 0;
-        if (itemsInRow != 0)
-        {
-            y += LineSpace + maxHeight;
-        }
-
-        maxHeight = 0;
-        itemsInRow = 0;
+        AddBlockLineBreakAfterBlockType(ref currentX, ref currentY, ref itemsInRow, ref maxHeight);
 
         foreach (Enum item in enums)
         {
-            InsertEnum(stringBuilder, item, ref blockCount, ref maxHeight, ref x, ref y, out double width, ref itemsInRow);
-
-            if (itemsInRow == maxItemsInRow)
-            {
-                x = 0;
-                y += LineSpace + maxHeight;
-                itemsInRow = 0;
-                maxHeight = 0;
-            }
-            else
-            {
-                x += (int) width + ItemSpace;
-            }
+            InsertEnum(stringBuilder, item, ref blockCount, ref maxHeight, ref itemsInRow, ref currentX, ref currentY, out double width);
+            InsertBlockLineBreakOrMoveHorizontally(width, ref currentX, ref currentY, ref maxHeight, ref itemsInRow);
         }
 
         foreach (Class item in classes)
@@ -179,7 +123,8 @@ internal static class DiagramGeneration
                             stringBuilder.AppendLine("    </coordinates>");
                             stringBuilder.AppendLine($"    <panel_attributes>{arrowType}");
                             stringBuilder.AppendLine($"{layer}</panel_attributes>");
-                            stringBuilder.AppendLine($"    <additional_attributes>0.0;{-yDifference + heightDifference};0.0;0.0;{xDifference};0.0;{xDifference};{heightDifference}</additional_attributes>");
+                            stringBuilder
+                               .AppendLine($"    <additional_attributes>0.0;{-yDifference + heightDifference};0.0;0.0;{xDifference};0.0;{xDifference};{heightDifference}</additional_attributes>");
                             stringBuilder.AppendLine("   </element>");
                             heightDifference += 10;
                             arrowCount++;
@@ -226,7 +171,8 @@ internal static class DiagramGeneration
                             stringBuilder.AppendLine("    </coordinates>");
                             stringBuilder.AppendLine($"    <panel_attributes>{arrowType}");
                             stringBuilder.AppendLine($"{layer}</panel_attributes>");
-                            stringBuilder.AppendLine($"    <additional_attributes>0.0;{-yDifference + heightDifferenceInterfaces};0.0;0.0;{xDifference};0.0;{xDifference};{heightDifferenceInterfaces}</additional_attributes>");
+                            stringBuilder
+                               .AppendLine($"    <additional_attributes>0.0;{-yDifference + heightDifferenceInterfaces};0.0;0.0;{xDifference};0.0;{xDifference};{heightDifferenceInterfaces}</additional_attributes>");
                             stringBuilder.AppendLine("   </element>");
                             heightDifferenceInterfaces += 10;
                             arrowCount++;
@@ -238,17 +184,50 @@ internal static class DiagramGeneration
 
         stringBuilder.AppendLine(TextBlocks.FileEnd);
 
-        return new GenerationResult() { ArrowCount = arrowCount, BlockCount = blockCount, DiagramFileContent = stringBuilder.ToString() };
+        return new GenerationResult { ArrowCount = arrowCount, BlockCount = blockCount, DiagramFileContent = stringBuilder.ToString() };
+    }
+
+    private static void AddBlockLineBreakAfterBlockType(ref int currentX, ref int currentY, ref int itemsInRow, ref int maxHeight)
+    {
+        currentY += ClassSpace - LineSpace;
+
+        currentX = 0;
+        if (itemsInRow != 0)
+        {
+            currentY += LineSpace + maxHeight;
+        }
+
+        maxHeight = 0;
+        itemsInRow = 0;
+    }
+
+    private static void InsertBlockLineBreakOrMoveHorizontally(double width,
+                                                               ref int currentX,
+                                                               ref int currentY,
+                                                               ref int maxHeight,
+                                                               ref int itemsInRow)
+    {
+        if (itemsInRow == MaxItemsInRow)
+        {
+            currentX = 0;
+            currentY += LineSpace + maxHeight;
+            itemsInRow = 0;
+            maxHeight = 0;
+        }
+        else
+        {
+            currentX += (int) width + ItemSpace;
+        }
     }
 
     private static void InsertClass(StringBuilder s,
                                     Class currentClass,
                                     ref int blockCount,
                                     ref int maxHeight,
+                                    ref int itemsInRow,
                                     ref int x,
                                     ref int y,
-                                    out double width,
-                                    ref int itemsInRow)
+                                    out double width)
     {
         int longestLineCharacterCount = 0;
         int lineCount = 0;
@@ -375,10 +354,10 @@ internal static class DiagramGeneration
                                         Interface currentInterface,
                                         ref int blockCount,
                                         ref int maxHeight,
+                                        ref int itemsInRow,
                                         ref int x,
                                         ref int y,
-                                        out double width,
-                                        ref int itemsInRow)
+                                        out double width)
     {
         int longestLineCharacterCount = 0;
         int lineCount = 0;
@@ -507,10 +486,10 @@ internal static class DiagramGeneration
                                    Enum currentEnum,
                                    ref int blockCount,
                                    ref int maxHeight,
+                                   ref int itemsInRow,
                                    ref int x,
                                    ref int y,
-                                   out double width,
-                                   ref int itemsInRow)
+                                   out double width)
     {
         int longestLineCharacterCount = 0;
         int lineCount = 0;
@@ -569,5 +548,12 @@ internal static class DiagramGeneration
         longestLineCharacterCount = sanitizedClassName.Length > longestLineCharacterCount
                                         ? sanitizedClassName.Length
                                         : longestLineCharacterCount;
+    }
+
+    public sealed class GenerationResult
+    {
+        public required string DiagramFileContent { get; init; }
+        public required int BlockCount { get; init; }
+        public required int ArrowCount { get; init; }
     }
 }
