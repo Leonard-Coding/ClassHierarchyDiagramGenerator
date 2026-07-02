@@ -9,6 +9,11 @@ internal static class DiagramGeneration
     private const int LineSpace = 50;
     private const int ItemSpace = 10;
     private const int MaxItemsInRow = -1; // indicates unlimited block counts per row
+    private const bool ClassInterfaceArrows = true; //if true arrows are activated and generated
+    private const bool BaseClassArrows = true;
+    private const bool InterfaceArrows = true;
+    private const bool AddPathBlock = false; //ich komme aktuell nicht an den Path dran, weil ich die variable path hier nicht verwenden kann
+    private const bool MoveInterfacesToRelatedClasses = true;
 
     public static GenerationResult GenerateDiagramFileContent(List<Class> classes, List<Interface> interfaces, List<Enum> enums)
     {
@@ -25,179 +30,194 @@ internal static class DiagramGeneration
 
         foreach (Class item in classes)
         {
-            InsertClass(stringBuilder, item, ref blockCount, ref maxHeight, ref itemsInRow, ref currentX, ref currentY, out double width);
+            InsertClass(stringBuilder, item, ref blockCount, ref maxHeight, ref itemsInRow, currentX, ref currentY, out double width);
             InsertBlockLineBreakOrMoveHorizontally(width, ref currentX, ref currentY, ref maxHeight, ref itemsInRow);
         }
 
-        AddBlockLineBreakAfterBlockType(ref currentX, ref currentY, ref itemsInRow, ref maxHeight);
-
+        AddBlockLineBreakAfterBlockType(ref currentY, ref itemsInRow, ref maxHeight);
+        currentX = 0;
+        
         foreach (Interface item in interfaces)
         {
-            InsertInterface(stringBuilder, item, ref blockCount, ref maxHeight, ref itemsInRow, ref currentX, ref currentY, out double width);
+            InsertInterface(stringBuilder, item, ref blockCount, ref maxHeight, ref itemsInRow, ref currentX, ref currentY, MoveInterfacesToRelatedClasses, classes, interfaces, out double width);
             InsertBlockLineBreakOrMoveHorizontally(width, ref currentX, ref currentY, ref maxHeight, ref itemsInRow);
         }
 
-        AddBlockLineBreakAfterBlockType(ref currentX, ref currentY, ref itemsInRow, ref maxHeight);
-
+        AddBlockLineBreakAfterBlockType(ref currentY, ref itemsInRow, ref maxHeight);
+        currentX = 0;
+        int interfaceMaxHeight = maxHeight;
+        maxHeight = 0;
+        
         foreach (Enum item in enums)
         {
             InsertEnum(stringBuilder, item, ref blockCount, ref maxHeight, ref itemsInRow, ref currentX, ref currentY, out double width);
             InsertBlockLineBreakOrMoveHorizontally(width, ref currentX, ref currentY, ref maxHeight, ref itemsInRow);
         }
 
-        foreach (Class item in classes)
-        {
-            foreach (var interfaceName in item.Interfaces)
-            {
-                foreach (var @interface in interfaces)
-                {
-                    if (interfaceName == @interface.Name)
-                    {
-                        const string arrowType = "lt=&lt;&lt;-";
-                        const string layer = "layer=0";
-                        var classData = item.LayoutData;
-                        var interfaceData = @interface.LayoutData;
-                        var xClass = classData.X;
-                        var widthClass = classData.Width;
-                        var yClass = classData.Y;
-                        var heightClass = classData.Height;
-                        var xArrowClass = xClass + widthClass / 2;
-                        var yArrowClass = yClass + heightClass;
-                        var xInterface = interfaceData.X;
-                        var widthInterface = interfaceData.Width;
-                        var yInterface = interfaceData.Y;
-                        var xArrowInterface = xInterface + widthInterface / 2;
-                        var xDifference = -(xArrowClass - xArrowInterface);
-                        var yDifference = -(yArrowClass - yInterface);
-                        stringBuilder.AppendLine("  <element>");
-                        stringBuilder.AppendLine("    <id>Relation</id>");
-                        stringBuilder.AppendLine("    <coordinates>");
-                        stringBuilder.AppendLine($"     <x>{xArrowClass}</x>");
-                        stringBuilder.AppendLine($"     <y>{yArrowClass}</y>");
-                        stringBuilder.AppendLine("     <w>0</w>");
-                        stringBuilder.AppendLine("     <h>0</h>");
-                        stringBuilder.AppendLine("    </coordinates>");
-                        stringBuilder.AppendLine($"    <panel_attributes>{arrowType}");
-                        stringBuilder.AppendLine($"{layer}</panel_attributes>");
-                        stringBuilder.AppendLine($"    <additional_attributes>{xDifference}.0;{yDifference}.0;0.0;0.0</additional_attributes>");
-                        stringBuilder.AppendLine("   </element>");
-                        arrowCount++;
-                    }
-                }
-            }
-        }
-
-        int heightDifference = 0;
-        foreach (Class item in classes)
-        {
-            if (item.BaseClass.Length > 0)
-            {
-                foreach (var baseClassName in item.BaseClass)
-                {
-                    foreach (Class @class in classes)
-                    {
-                        if (baseClassName.ToString() == @class.Name)
-                        {
-                            heightDifference += 20;
-                            const string arrowType = "lt=-&gt;&gt;";
-                            const string layer = "layer=0";
-                            var classData = item.LayoutData;
-                            var interfaceData = @class.LayoutData;
-                            var xClass = classData.X;
-                            var widthClass = classData.Width;
-                            var yClass = classData.Y;
-                            var xArrowClass = xClass + widthClass / 2;
-                            var xInterfaceData = interfaceData.X;
-                            var widthInterfaceData = interfaceData.Width;
-                            var yInterfaceData = interfaceData.Y;
-                            var xArrowInterfaceData = xInterfaceData + widthInterfaceData / 2;
-                            var xDifference = -(xArrowClass - xArrowInterfaceData);
-                            var yDifference = -(yClass - yInterfaceData);
-                            stringBuilder.AppendLine("  <element>");
-                            stringBuilder.AppendLine("    <id>Relation</id>");
-                            stringBuilder.AppendLine("    <coordinates>");
-                            stringBuilder.AppendLine($"     <x>{xArrowClass}</x>");
-                            stringBuilder.AppendLine($"     <y>{yClass - heightDifference + yDifference}</y>");
-                            stringBuilder.AppendLine("     <w>0</w>");
-                            stringBuilder.AppendLine("     <h>0</h>");
-                            stringBuilder.AppendLine("    </coordinates>");
-                            stringBuilder.AppendLine($"    <panel_attributes>{arrowType}");
-                            stringBuilder.AppendLine($"{layer}</panel_attributes>");
-                            stringBuilder
-                               .AppendLine($"    <additional_attributes>0.0;{-yDifference + heightDifference};0.0;0.0;{xDifference};0.0;{xDifference};{heightDifference}</additional_attributes>");
-                            stringBuilder.AppendLine("   </element>");
-                            heightDifference += 10;
-                            arrowCount++;
-                        }
-                    }
-                }
-            }
-        }
-
-        int heightDifferenceInterfaces = 0;
-        foreach (Interface item in interfaces)
-        {
-            if (item.Interfaces.Count > 0)
+        if (ClassInterfaceArrows)
+        {    
+            foreach (Class item in classes)
             {
                 foreach (var interfaceName in item.Interfaces)
                 {
-                    foreach (Interface names in interfaces)
+                    foreach (var @interface in interfaces)
                     {
-                        if (interfaceName == names.Name)
+                        if (interfaceName == @interface.Name)
                         {
-                            heightDifferenceInterfaces -= 20;
-                            const string arrowType = "lt=-&gt;&gt;";
+                            const string arrowType = "lt=&lt;&lt;-";
                             const string layer = "layer=0";
                             var classData = item.LayoutData;
-                            var interfaceData = names.LayoutData;
-                            var xInterface2 = classData.X;
-                            var widthInterface2 = classData.Width;
-                            var yInterface2 = classData.Y;
-                            var heightInterface2 = classData.Height;
-                            var xArrowInterface2 = xInterface2 + widthInterface2 / 2;
+                            var interfaceData = @interface.LayoutData;
+                            var xClass = classData.X;
+                            var widthClass = classData.Width;
+                            var yClass = classData.Y;
+                            var heightClass = classData.Height;
+                            var xArrowClass = xClass + widthClass / 2;
+                            var yArrowClass = yClass + heightClass;
                             var xInterface = interfaceData.X;
                             var widthInterface = interfaceData.Width;
                             var yInterface = interfaceData.Y;
                             var xArrowInterface = xInterface + widthInterface / 2;
-                            var xDifference = -(xArrowInterface2 - xArrowInterface);
-                            var yDifference = -(yInterface2 - yInterface);
+                            var xDifference = -(xArrowClass - xArrowInterface);
+                            var yDifference = -(yArrowClass - yInterface);
                             stringBuilder.AppendLine("  <element>");
                             stringBuilder.AppendLine("    <id>Relation</id>");
                             stringBuilder.AppendLine("    <coordinates>");
-                            stringBuilder.AppendLine($"     <x>{xArrowInterface2}</x>");
-                            stringBuilder.AppendLine($"     <y>{yInterface2 + heightInterface2 - heightDifferenceInterfaces}</y>");
+                            stringBuilder.AppendLine($"     <x>{xArrowClass}</x>");
+                            stringBuilder.AppendLine($"     <y>{yArrowClass}</y>");
                             stringBuilder.AppendLine("     <w>0</w>");
                             stringBuilder.AppendLine("     <h>0</h>");
                             stringBuilder.AppendLine("    </coordinates>");
                             stringBuilder.AppendLine($"    <panel_attributes>{arrowType}");
                             stringBuilder.AppendLine($"{layer}</panel_attributes>");
-                            stringBuilder
-                               .AppendLine($"    <additional_attributes>0.0;{-yDifference + heightDifferenceInterfaces};0.0;0.0;{xDifference};0.0;{xDifference};{heightDifferenceInterfaces}</additional_attributes>");
+                            stringBuilder.AppendLine($"    <additional_attributes>{xDifference}.0;{yDifference}.0;0.0;0.0</additional_attributes>");
                             stringBuilder.AppendLine("   </element>");
-                            heightDifferenceInterfaces += 10;
                             arrowCount++;
                         }
                     }
                 }
             }
         }
+    
+        if (BaseClassArrows)
+        {
+            int heightDifference = 0;
+            foreach (Class item in classes)
+            {
+                if (item.BaseClass.Length > 0)
+                {
+                    foreach (var baseClassName in item.BaseClass)
+                    {
+                        foreach (Class @class in classes)
+                        {
+                            if (baseClassName.ToString() == @class.Name)
+                            {
+                                heightDifference += 20;
+                                const string arrowType = "lt=-&gt;&gt;";
+                                const string layer = "layer=0";
+                                var classData = item.LayoutData;
+                                var interfaceData = @class.LayoutData;
+                                var xClass = classData.X;
+                                var widthClass = classData.Width;
+                                var yClass = classData.Y;
+                                var xArrowClass = xClass + widthClass / 2;
+                                var xInterfaceData = interfaceData.X;
+                                var widthInterfaceData = interfaceData.Width;
+                                var yInterfaceData = interfaceData.Y;
+                                var xArrowInterfaceData = xInterfaceData + widthInterfaceData / 2;
+                                var xDifference = -(xArrowClass - xArrowInterfaceData);
+                                var yDifference = -(yClass - yInterfaceData);
+                                stringBuilder.AppendLine("  <element>");
+                                stringBuilder.AppendLine("    <id>Relation</id>");
+                                stringBuilder.AppendLine("    <coordinates>");
+                                stringBuilder.AppendLine($"     <x>{xArrowClass}</x>");
+                                stringBuilder.AppendLine($"     <y>{yClass - heightDifference + yDifference}</y>");
+                                stringBuilder.AppendLine("     <w>0</w>");
+                                stringBuilder.AppendLine("     <h>0</h>");
+                                stringBuilder.AppendLine("    </coordinates>");
+                                stringBuilder.AppendLine($"    <panel_attributes>{arrowType}");
+                                stringBuilder.AppendLine($"{layer}</panel_attributes>");
+                                stringBuilder
+                                   .AppendLine($"    <additional_attributes>0.0;{-yDifference + heightDifference};0.0;0.0;{xDifference};0.0;{xDifference};{heightDifference}</additional_attributes>");
+                                stringBuilder.AppendLine("   </element>");
+                                heightDifference += 10;
+                                arrowCount++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
-        stringBuilder.AppendLine(TextBlocks.FileEnd);
+        if (InterfaceArrows)
+        {
+            int heightDifferenceInterfaces = 0;
+            foreach (Interface item in interfaces)
+            {
+                if (item.Interfaces.Count > 0)
+                {
+                    foreach (var interfaceName in item.Interfaces)
+                    {
+                        foreach (Interface names in interfaces)
+                        {
+                            if (interfaceName == names.Name)
+                            {
+                                heightDifferenceInterfaces -= 20;
+                                const string arrowType = "lt=-&gt;&gt;";
+                                const string layer = "layer=0";
+                                var classData = item.LayoutData;
+                                var interfaceData = names.LayoutData;
+                                var xInterface2 = classData.X;
+                                var widthInterface2 = classData.Width;
+                                var yInterface2 = classData.Y;
+                                var xArrowInterface2 = xInterface2 + widthInterface2 / 2;
+                                var xInterface = interfaceData.X;
+                                var widthInterface = interfaceData.Width;
+                                var yInterface = interfaceData.Y;
+                                var xArrowInterface = xInterface + widthInterface / 2;
+                                var xDifference = -(xArrowInterface2 - xArrowInterface);
+                                var yDifference = -(yInterface2 - yInterface);
+                                stringBuilder.AppendLine("  <element>");
+                                stringBuilder.AppendLine("    <id>Relation</id>");
+                                stringBuilder.AppendLine("    <coordinates>");
+                                stringBuilder.AppendLine($"     <x>{xArrowInterface2}</x>");
+                                stringBuilder.AppendLine($"     <y>{yInterface2 - heightDifferenceInterfaces - (interfaceMaxHeight - yInterface)}</y>");
+                                stringBuilder.AppendLine("     <w>0</w>");
+                                stringBuilder.AppendLine("     <h>0</h>");
+                                stringBuilder.AppendLine("    </coordinates>");
+                                stringBuilder.AppendLine($"    <panel_attributes>{arrowType}");
+                                stringBuilder.AppendLine($"{layer}</panel_attributes>");
+                                stringBuilder.AppendLine($"    <additional_attributes>0.0;{-yDifference + heightDifferenceInterfaces + (interfaceMaxHeight - yInterface)};0.0;0.0;{xDifference};0.0;{xDifference};{heightDifferenceInterfaces + (interfaceMaxHeight - yInterface)}</additional_attributes>");
+                                stringBuilder.AppendLine("   </element>");
+                                heightDifferenceInterfaces += 10;
+                                arrowCount++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        if (AddPathBlock)
+        {
+            stringBuilder.AppendLine(TextBlocks.PathBlock);
+            stringBuilder.AppendLine(@"C:\\Repos\\ClassHierarchyDiagramGenerator\\ClassHierarchyDiagramGenerator");
+            stringBuilder.AppendLine(TextBlocks.PathBlockafterPath);
+            stringBuilder.AppendLine(TextBlocks.FileEnd);
+        }
 
         return new GenerationResult { ArrowCount = arrowCount, BlockCount = blockCount, DiagramFileContent = stringBuilder.ToString() };
     }
 
-    private static void AddBlockLineBreakAfterBlockType(ref int currentX, ref int currentY, ref int itemsInRow, ref int maxHeight)
+    private static void AddBlockLineBreakAfterBlockType(ref int currentY, ref int itemsInRow, ref int maxHeight)
     {
         currentY += ClassSpace - LineSpace;
-
-        currentX = 0;
+        
         if (itemsInRow != 0)
         {
             currentY += LineSpace + maxHeight;
         }
-
-        maxHeight = 0;
+        
         itemsInRow = 0;
     }
 
@@ -219,13 +239,14 @@ internal static class DiagramGeneration
             currentX += (int) width + ItemSpace;
         }
     }
-
+    
+    
     private static void InsertClass(StringBuilder s,
                                     Class currentClass,
                                     ref int blockCount,
                                     ref int maxHeight,
                                     ref int itemsInRow,
-                                    ref int x,
+                                    int x,
                                     ref int y,
                                     out double width)
     {
@@ -357,6 +378,9 @@ internal static class DiagramGeneration
                                         ref int itemsInRow,
                                         ref int x,
                                         ref int y,
+                                        bool MoveInterfacesToRelatedClasses,
+                                        List<Class> classes,
+                                        List<Interface> interfaces,
                                         out double width)
     {
         int longestLineCharacterCount = 0;
@@ -475,7 +499,29 @@ internal static class DiagramGeneration
             maxHeight = (int) height;
         }
 
-        string classHeader = string.Format(TextBlocks.ClassBeginFormat, x, y, width, height);
+        if (MoveInterfacesToRelatedClasses)
+        {
+            foreach (var classItem in classes)
+            {
+                foreach (var classItemInterface in classItem.Interfaces)
+                {
+                    if (classItemInterface == currentInterface.Name)
+                    {
+                        x = classItem.LayoutData.X;
+                        foreach (var interfaceItem in interfaces)
+                        {
+                            if (x == interfaceItem.LayoutData.X)
+                            {
+                                x += interfaceItem.LayoutData.Height + LineSpace;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        currentInterface.LayoutData.X = x;
+        string classHeader = string.Format(TextBlocks.InterfaceBeginFormat, x, y, width, height);
 
         s.Insert(classElementStartIndex, classHeader);
 
