@@ -499,6 +499,8 @@ internal static class DiagramGeneration
             maxHeight = (int) height;
         }
 
+        double xSave = x;
+        
         if (MoveInterfacesToRelatedClasses)
         {
             foreach (var classItem in classes)
@@ -519,12 +521,11 @@ internal static class DiagramGeneration
                 }
             }
         }
-
+        
         currentInterface.LayoutData.X = x;
         string classHeader = string.Format(TextBlocks.InterfaceBeginFormat, x, y, width, height);
-
         s.Insert(classElementStartIndex, classHeader);
-
+        x = (int)xSave;
         itemsInRow++;
     }
 
