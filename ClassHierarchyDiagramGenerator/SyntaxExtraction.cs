@@ -6,8 +6,9 @@ namespace ClassHierarchyDiagramGenerator;
 
 internal static class SyntaxExtractionFromFiles
 {
-    static string[] _endungen = { "Factory", "Provider"};
-    static string[] _endungenb = { "Utils", "Extensions"};
+    private static readonly string[] FactorySuffixes = ["Factory", "Provider"];
+    private static readonly string[] UtilsSuffixes = ["Utils", "Extensions"];
+    
     public static List<Class> ExtractClasses(string[] files)
     {
         List<Class> sortedDescending = new List<Class>();
@@ -43,11 +44,11 @@ internal static class SyntaxExtractionFromFiles
                                      BaseClass = baseClass,
                                      Interfaces = interfaces
                                  };
-                    if (_endungen.Any(endung => @class.Name.EndsWith(endung)))
+                    if (FactorySuffixes.Any(endung => @class.Name.EndsWith(endung)))
                     {
                         @class.LayoutData.Color = "magenta";
                     }
-                    else if (_endungenb.Any(endung => @class.Name.EndsWith(endung)))
+                    else if (UtilsSuffixes.Any(endung => @class.Name.EndsWith(endung)))
                     {
                         @class.LayoutData.Color = "pink";
                     }
