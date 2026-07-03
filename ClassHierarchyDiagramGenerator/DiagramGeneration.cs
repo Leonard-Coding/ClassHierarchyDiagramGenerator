@@ -12,8 +12,8 @@ internal static class DiagramGeneration
     private const bool ClassInterfaceArrows = true; //if true arrows are activated and generated
     private const bool BaseClassArrows = true;
     private const bool InterfaceArrows = true;
-    private const bool AddPathBlock = false; //ich komme aktuell nicht an den Path dran, weil ich die variable path hier nicht verwenden kann
-    private const bool MoveInterfacesToRelatedClasses = false;
+    private const bool AddPathBlock = true; //ich komme aktuell nicht an den Path dran, weil ich die variable path hier nicht verwenden kann
+    private const bool MoveInterfacesToRelatedClasses = true;
 
     public static GenerationResult GenerateDiagramFileContent(List<Class> classes, List<Interface> interfaces, List<Enum> enums)
     {
@@ -206,14 +206,15 @@ internal static class DiagramGeneration
                 }
             }
         }
-        
+
         if (AddPathBlock)
         {
             stringBuilder.AppendLine(TextBlocks.PathBlock);
-            stringBuilder.AppendLine(@"C:\\Repos\\ClassHierarchyDiagramGenerator\\ClassHierarchyDiagramGenerator");
+            stringBuilder.AppendLine(@"CC:\Repos\ClassHierarchyDiagramGenerator\ClassHierarchyDiagramGenerator");
             stringBuilder.AppendLine(TextBlocks.PathBlockafterPath);
-            stringBuilder.AppendLine(TextBlocks.FileEnd);
         }
+
+        stringBuilder.AppendLine(TextBlocks.FileEnd);
 
         return new GenerationResult { ArrowCount = arrowCount, BlockCount = blockCount, DiagramFileContent = stringBuilder.ToString() };
     }
