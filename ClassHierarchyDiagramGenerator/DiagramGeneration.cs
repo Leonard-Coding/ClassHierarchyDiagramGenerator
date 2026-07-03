@@ -13,7 +13,7 @@ internal static class DiagramGeneration
     private const bool BaseClassArrows = true;
     private const bool InterfaceArrows = true;
     private const bool AddPathBlock = false; //ich komme aktuell nicht an den Path dran, weil ich die variable path hier nicht verwenden kann
-    private const bool MoveInterfacesToRelatedClasses = true;
+    private const bool MoveInterfacesToRelatedClasses = false;
 
     public static GenerationResult GenerateDiagramFileContent(List<Class> classes, List<Interface> interfaces, List<Enum> enums)
     {
@@ -43,9 +43,17 @@ internal static class DiagramGeneration
             InsertBlockLineBreakOrMoveHorizontally(width, ref currentX, ref currentY, ref maxHeight, ref itemsInRow);
         }
 
-        AddBlockLineBreakAfterBlockType(ref currentY, ref itemsInRow, ref maxHeight);
+        int interfaceMaxHeight = 0;
+        foreach (var interfaceHeight in interfaces)
+        {
+            if (interfaceHeight.LayoutData.Height > interfaceMaxHeight)
+            {
+                interfaceMaxHeight = interfaceHeight.LayoutData.Height;
+            }
+        }
+        AddBlockLineBreakAfterBlockType(ref currentY, ref itemsInRow, ref interfaceMaxHeight);
         currentX = 0;
-        int interfaceMaxHeight = maxHeight;
+            
         maxHeight = 0;
         
         foreach (Enum item in enums)
@@ -162,17 +170,18 @@ internal static class DiagramGeneration
                         {
                             if (interfaceName == names.Name)
                             {
-                                heightDifferenceInterfaces -= 20;
                                 const string arrowType = "lt=-&gt;&gt;";
                                 const string layer = "layer=0";
                                 var classData = item.LayoutData;
                                 var interfaceData = names.LayoutData;
                                 var xInterface2 = classData.X;
                                 var widthInterface2 = classData.Width;
+                                var heightInterface2 = classData.Height;
                                 var yInterface2 = classData.Y;
                                 var xArrowInterface2 = xInterface2 + widthInterface2 / 2;
                                 var xInterface = interfaceData.X;
                                 var widthInterface = interfaceData.Width;
+                                var heightInterface = interfaceData.Height;
                                 var yInterface = interfaceData.Y;
                                 var xArrowInterface = xInterface + widthInterface / 2;
                                 var xDifference = -(xArrowInterface2 - xArrowInterface);
@@ -181,13 +190,13 @@ internal static class DiagramGeneration
                                 stringBuilder.AppendLine("    <id>Relation</id>");
                                 stringBuilder.AppendLine("    <coordinates>");
                                 stringBuilder.AppendLine($"     <x>{xArrowInterface2}</x>");
-                                stringBuilder.AppendLine($"     <y>{yInterface2 - heightDifferenceInterfaces - (interfaceMaxHeight - yInterface)}</y>");
+                                stringBuilder.AppendLine($"     <y>{yInterface + heightDifferenceInterfaces + heightInterface + heightInterface}</y>");
                                 stringBuilder.AppendLine("     <w>0</w>");
                                 stringBuilder.AppendLine("     <h>0</h>");
                                 stringBuilder.AppendLine("    </coordinates>");
                                 stringBuilder.AppendLine($"    <panel_attributes>{arrowType}");
                                 stringBuilder.AppendLine($"{layer}</panel_attributes>");
-                                stringBuilder.AppendLine($"    <additional_attributes>0.0;{-yDifference + heightDifferenceInterfaces + (interfaceMaxHeight - yInterface)};0.0;0.0;{xDifference};0.0;{xDifference};{heightDifferenceInterfaces + (interfaceMaxHeight - yInterface)}</additional_attributes>");
+                                stringBuilder.AppendLine($"    <additional_attributes>0.0;{-yDifference - heightDifferenceInterfaces - (interfaceMaxHeight - heightInterface) - 10};0.0;0.0;{xDifference};0.0;{xDifference};{yDifference - heightDifferenceInterfaces - (interfaceMaxHeight - heightInterface) - 10}</additional_attributes>");
                                 stringBuilder.AppendLine("   </element>");
                                 heightDifferenceInterfaces += 10;
                                 arrowCount++;
@@ -209,13 +218,13 @@ internal static class DiagramGeneration
         return new GenerationResult { ArrowCount = arrowCount, BlockCount = blockCount, DiagramFileContent = stringBuilder.ToString() };
     }
 
-    private static void AddBlockLineBreakAfterBlockType(ref int currentY, ref int itemsInRow, ref int maxHeight)
+    private static void AddBlockLineBreakAfterBlockType(ref int currentY, ref int itemsInRow, ref int interfaceMaxHeight)
     {
         currentY += ClassSpace - LineSpace;
         
         if (itemsInRow != 0)
         {
-            currentY += LineSpace + maxHeight;
+            currentY += LineSpace + interfaceMaxHeight;
         }
         
         itemsInRow = 0;
