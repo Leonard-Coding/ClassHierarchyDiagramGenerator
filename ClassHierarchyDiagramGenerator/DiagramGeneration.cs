@@ -196,7 +196,7 @@ internal static class DiagramGeneration
                                 stringBuilder.AppendLine("    </coordinates>");
                                 stringBuilder.AppendLine($"    <panel_attributes>{arrowType}");
                                 stringBuilder.AppendLine($"{layer}</panel_attributes>");
-                                stringBuilder.AppendLine($"    <additional_attributes>0.0;{-yDifference - heightDifferenceInterfaces - (interfaceMaxHeight - heightInterface) - 10};0.0;0.0;{xDifference};0.0;{xDifference};{yDifference - heightDifferenceInterfaces - (interfaceMaxHeight - heightInterface) - 10}</additional_attributes>");
+                                stringBuilder.AppendLine($"    <additional_attributes>0.0;{-yDifference - heightDifferenceInterfaces - (interfaceMaxHeight - heightInterface) - 10};0.0;0.0;{xDifference};0.0;{xDifference};{yDifference - heightDifferenceInterfaces - (interfaceMaxHeight - heightInterface2) - 10}</additional_attributes>");
                                 stringBuilder.AppendLine("   </element>");
                                 heightDifferenceInterfaces += 10;
                                 arrowCount++;
